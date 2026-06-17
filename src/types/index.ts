@@ -48,8 +48,12 @@ export interface Campaign {
     status: string;
     verified_status: string;
     created_at: string;
+    story: string;
     user?: User;
     category?: CampaignCategory;
+    tags?: Tag[];
+    images?: { id: number; image_url: string; order_index: number }[];
+    updates?: any[];
 }
 
 export interface SiteSetting {
@@ -100,3 +104,22 @@ export interface PaginatedResponse<T> {
     };
     message: string;
 }
+
+export interface UserDashboardData {
+    overview: {
+        total_donations: number;
+        total_donated_amount: number;
+        active_campaigns_count: number;
+        total_collected_amount: number;
+    };
+    charts: {
+        donations_last_30_days: {
+            date: string;
+            amount: number;
+            count: number;
+        }[];
+    };
+    my_campaigns: (Campaign & { donations_count: number })[];
+    recent_donations: Donation[];
+}
+
