@@ -10,7 +10,9 @@ const AuthCallbackPage: React.FC = () => {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const token = params.get('token');
+        const id = params.get('id');
         const name = params.get('name');
+        const email = params.get('email');
         const avatar = params.get('avatar');
         const role = params.get('role');
         const error = params.get('error');
@@ -27,7 +29,9 @@ const AuthCallbackPage: React.FC = () => {
 
         if (token) {
             localStorage.setItem('token', token);
+            localStorage.setItem('user_id', id || '');
             localStorage.setItem('user_name', name || '');
+            localStorage.setItem('user_email', email || '');
             localStorage.setItem('user_avatar', avatar || '');
             localStorage.setItem('user_role', role || 'user');
 

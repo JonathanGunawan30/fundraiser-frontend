@@ -1,6 +1,17 @@
-import { Layout, Menu, Button, Space, Typography, Row, Col, Drawer, Grid } from 'antd';
+import { Layout, Menu, Button, Space, Typography, Row, Col, Drawer, Grid, Dropdown, Avatar } from 'antd';
 import { Outlet, useNavigate, Link } from 'react-router-dom';
-import { SearchOutlined, FacebookFilled, InstagramFilled, TwitterOutlined, YoutubeFilled, MenuOutlined } from '@ant-design/icons';
+import { 
+    SearchOutlined, 
+    FacebookFilled, 
+    InstagramFilled, 
+    TwitterOutlined, 
+    YoutubeFilled, 
+    MenuOutlined,
+    UserOutlined,
+    LogoutOutlined,
+    DashboardOutlined,
+    ProfileOutlined
+} from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import api from '../api/axios';
@@ -13,8 +24,46 @@ const { useBreakpoint } = Grid;
 const MainLayout: React.FC = () => {
     const navigate = useNavigate();
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('user_role');
+    const [isLoggedIn] = useState(() => !!(token && role === 'user'));
+    const [userName] = useState(() => localStorage.getItem('user_name') || '');
+    const [userAvatar] = useState(() => localStorage.getItem('user_avatar') || '');
     const screens = useBreakpoint();
     const isMobile = !screens.md;
+
+    const handleLogout = () => {
+        localStorage.clear();
+        navigate('/');
+    };
+
+    const userMenu = {
+        items: [
+            {
+                key: 'dashboard',
+                label: 'Dashboard',
+                icon: <DashboardOutlined />,
+                onClick: () => navigate('/dashboard'),
+            },
+            {
+                key: 'profile',
+                label: 'Profil Saya',
+                icon: <ProfileOutlined />,
+                onClick: () => navigate('/profile'),
+            },
+            {
+                key: 'divider',
+                type: 'divider' as const,
+            },
+            {
+                key: 'logout',
+                label: 'Keluar',
+                icon: <LogoutOutlined />,
+                danger: true,
+                onClick: handleLogout,
+            },
+        ],
+    };
 
     const { data: settings } = useQuery({
         queryKey: ['site-settings'],
@@ -35,19 +84,20 @@ const MainLayout: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh', background: '#fff' }}>
-            <Header style={{
-                position: 'sticky',
-                top: 0,
-                zIndex: 1000,
-                width: '100%',
-                padding: isMobile ? '0 20px' : '0 5%',
-                background: 'rgba(255, 255, 255, 0.9)',
-                backdropFilter: 'blur(10px)',
-                borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-            }}>
+                <Header style={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 1000,
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: isMobile ? '0 20px' : '0 5%',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}>
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px' }}>
                     <img src="/logo/fundraiser-logo-nt.png" alt="FundRaiser Logo" style={{ height: isMobile ? 28 : 34 }} />
                     <span style={{ fontWeight: 800, fontSize: isMobile ? '1.2rem' : '1.4rem', color: '#0f172a', letterSpacing: '-0.5px' }}>FundRaiser</span>
@@ -68,22 +118,38 @@ const MainLayout: React.FC = () => {
                 {!isMobile && (
                     <Space size="large">
                         <Button type="text" icon={<SearchOutlined />} style={{ fontSize: '18px', color: '#475569' }} />
-                        <Button type="text" onClick={() => navigate('/auth/login')} style={{ fontWeight: 600, color: '#475569' }}>Masuk</Button>
-                        <Button type="primary" onClick={() => navigate('/campaigns')} style={{ background: '#1677ff', height: '42px', padding: '0 24px', borderRadius: '8px', fontWeight: 600, border: 'none' }}>
-                            Daftar
-                        </Button>
+                        {isLoggedIn ? (
+                            <Dropdown menu={userMenu} placement="bottomRight" arrow>
+                                <Space style={{ cursor: 'pointer' }}>
+                                    <Avatar src={userAvatar} icon={<UserOutlined />} />
+                                    <Text strong>{userName.split(' ')[0]}</Text>
+                                </Space>
+                            </Dropdown>
+                        ) : (
+                            <Button 
+                                type="primary" 
+                                onClick={() => navigate('/auth/login')} 
+                                style={{ background: '#1677ff', height: '42px', padding: '0 24px', borderRadius: '8px', fontWeight: 600, border: 'none' }}
+                            >
+                                Masuk / Daftar
+                            </Button>
+                        )}
                     </Space>
                 )}
 
                 {isMobile && (
-                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <Button type="text" icon={<SearchOutlined />} style={{ fontSize: '20px', color: '#0f172a' }} />
-                        <Button type="text" icon={<MenuOutlined style={{ fontSize: 22 }} />} onClick={() => setDrawerOpen(true)} style={{ color: '#0f172a' }} />
+                        {isLoggedIn && (
+                            <Dropdown menu={userMenu} placement="bottomRight" arrow>
+                                <Avatar src={userAvatar} icon={<UserOutlined />} />
+                            </Dropdown>
+                        )}
+                        <Button type="text" icon={<MenuOutlined style={{ fontSize: 22 }} />} onClick={() => setDrawerOpen(true)} style={{ color: '#0f172a', paddingRight: 0 }} />
                     </div>
                 )}
             </Header>
 
-            {/* Mobile Drawer */}
             <Drawer
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -102,12 +168,11 @@ const MainLayout: React.FC = () => {
                     style={{ border: 'none' }}
                     items={menuItems}
                 />
-                <div style={{ padding: '24px 16px', borderTop: '1px solid #f1f5f9', marginTop: 16 }}>
-                    <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                        <Button block onClick={() => { navigate('/auth/login'); setDrawerOpen(false); }} style={{ fontWeight: 600 }}>Masuk</Button>
-                        <Button block type="primary" onClick={() => { navigate('/campaigns'); setDrawerOpen(false); }} style={{ background: '#1677ff', fontWeight: 600 }}>Daftar</Button>
-                    </Space>
-                </div>
+                {!isLoggedIn && (
+                    <div style={{ padding: '24px 16px', borderTop: '1px solid #f1f5f9', marginTop: 16 }}>
+                        <Button block type="primary" onClick={() => { navigate('/auth/login'); setDrawerOpen(false); }} style={{ background: '#1677ff', fontWeight: 600, height: '42px' }}>Masuk / Daftar</Button>
+                    </div>
+                )}
             </Drawer>
 
             <Content style={{ padding: 0 }}>
