@@ -204,6 +204,7 @@ const LandingPage: React.FC = () => {
                                     style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', height: '100%' }}
                                     cover={<img alt={campaign.title} src={campaign.cover_image_url} style={{ height: 180, objectFit: 'cover' }} />}
                                     bodyStyle={{ padding: 20 }}
+                                    onClick={() => navigate(`/campaigns/${campaign.slug}`)}
                                 >
                                     <Tag color="blue" style={{ marginBottom: 12, borderRadius: 4, border: 'none', background: '#f0f7ff', color: '#1677ff', fontWeight: 600 }}>
                                         {campaign.category?.name || 'Kategori'}

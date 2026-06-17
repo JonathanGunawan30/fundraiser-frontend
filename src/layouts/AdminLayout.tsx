@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     TeamOutlined,
     UserOutlined,
@@ -56,7 +56,7 @@ const items: MenuItem[] = [
 
 const AdminLayout: React.FC = () => {
     const screens = useBreakpoint();
-    const isMobile = !screens.md;
+    const isMobile = screens.xs || (screens.sm && !screens.md);
     const [collapsed, setCollapsed] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [adminName, setAdminName] = useState(() => localStorage.getItem('user_name') || 'Administrator');
@@ -66,6 +66,25 @@ const AdminLayout: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // Determine active and open keys for the menu based on current path
+    const { selectedKeys, openKeys } = useMemo(() => {
+        const path = location.pathname;
+        let selected = [path];
+        let open = [];
+
+        // If reviewing a campaign, keep "All Campaigns" selected
+        if (path.startsWith('/admin/campaigns/') && path.endsWith('/review')) {
+            selected = ['/admin/campaigns'];
+            open = ['campaigns-grp'];
+        } else if (path.includes('/admin/categories') || path.includes('/admin/tags') || path === '/admin/campaigns') {
+            open = ['campaigns-grp'];
+        } else if (path.includes('/admin/banners') || path.includes('/admin/faqs') || path.includes('/admin/audit-logs')) {
+            open = ['mgmt-grp'];
+        }
+
+        return { selectedKeys: selected, openKeys: open };
+    }, [location.pathname]);
+
     const syncProfile = () => {
         const name = localStorage.getItem('user_name');
         const avatar = localStorage.getItem('user_avatar');
@@ -74,17 +93,16 @@ const AdminLayout: React.FC = () => {
     };
 
     useEffect(() => {
-        // Listen for profile updates
         window.addEventListener('user-profile-updated', syncProfile);
         return () => window.removeEventListener('user-profile-updated', syncProfile);
     }, []);
 
     // Close drawer when location changes (mobile)
     useEffect(() => {
-        if (isMobile && drawerVisible) {
+        if (isMobile) {
             setDrawerVisible(false);
         }
-    }, [location.pathname, isMobile, drawerVisible]);
+    }, [location.pathname, isMobile]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -114,8 +132,15 @@ const AdminLayout: React.FC = () => {
     ];
 
     const sidebarContent = (
-        <>
-            <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: (collapsed && !isMobile) ? 'center' : 'flex-start', padding: (collapsed && !isMobile) ? 0 : '0 24px', transition: 'all 0.3s' }}>
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ 
+                height: 64, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: (collapsed && !isMobile) ? 'center' : 'flex-start', 
+                padding: (collapsed && !isMobile) ? 0 : '0 24px', 
+                transition: 'all 0.3s' 
+            }}>
                 <img 
                     src="/logo/fundraiser-logo-nt.png" 
                     alt="FundRaiser Logo" 
@@ -130,11 +155,12 @@ const AdminLayout: React.FC = () => {
             <Menu
                 theme="dark"
                 mode="inline"
-                selectedKeys={[location.pathname]}
+                selectedKeys={selectedKeys}
+                defaultOpenKeys={openKeys}
                 items={items}
                 style={{ borderRight: 0, marginTop: 16 }}
             />
-        </>
+        </div>
     );
 
     return (
@@ -210,7 +236,7 @@ const AdminLayout: React.FC = () => {
                     }}>
                         <Button
                             type="text"
-                            icon={isMobile ? <MenuUnfoldOutlined /> : (collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />)}
+                            icon={<MenuUnfoldOutlined />}
                             onClick={() => isMobile ? setDrawerVisible(true) : setCollapsed(!collapsed)}
                             style={{ fontSize: '16px', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         />
@@ -257,4 +283,3 @@ const AdminLayout: React.FC = () => {
 };
 
 export default AdminLayout;
-
