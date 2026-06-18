@@ -67,10 +67,14 @@ export interface SiteSetting {
 
 export interface Donation {
     id: number;
+    donation_number: string;
     user_id: number;
     campaign_id: number;
     amount: number;
+    message?: string;
+    is_anonymous: boolean;
     status: string;
+    invoice_url?: string;
     created_at: string;
     user?: User;
     campaign?: Campaign;
