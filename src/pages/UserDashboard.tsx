@@ -1,5 +1,5 @@
-import React from 'react';
-import { Typography, Row, Col, Card, Statistic, Table, Tag, Space, Avatar, Button, App, Tooltip } from 'antd';
+import React, { useState } from 'react';
+import { Typography, Row, Col, Card, Statistic, Table, Tag, Space, Avatar, Button, App, Tooltip, List } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -13,19 +13,30 @@ import {
     EditOutlined
 } from '@ant-design/icons';
 import api from '../api/axios';
-import type { UserDashboardData, Campaign, Donation } from '../types';
+import type { UserDashboardData, Campaign, Donation, PaginatedResponse } from '../types';
 
 const { Title, Text } = Typography;
 
 const UserDashboard: React.FC = () => {
     const { notification } = App.useApp();
     const navigate = useNavigate();
+    const [campaignPage, setCampaignPage] = useState(1);
 
-    const { data, isLoading } = useQuery<UserDashboardData>({
+    const { data: dashboardData, isLoading: isDashboardLoading } = useQuery<UserDashboardData>({
         queryKey: ['user-dashboard'],
         queryFn: async () => {
             const response = await api.get('/auth/dashboard');
             return response.data.data;
+        },
+    });
+
+    const { data: campaignsData, isLoading: isCampaignsLoading } = useQuery<PaginatedResponse<Campaign>>({
+        queryKey: ['user-dashboard-campaigns', campaignPage],
+        queryFn: async () => {
+            const response = await api.get('/auth/my-campaigns', { 
+                params: { page: campaignPage, per_page: 5 } 
+            });
+            return response.data;
         },
     });
 
@@ -35,10 +46,10 @@ const UserDashboard: React.FC = () => {
             dataIndex: 'title',
             key: 'title',
             render: (text: string, record: Campaign) => (
-                <Space>
+                <Space align="start">
                     <Avatar shape="square" size="large" src={record.cover_image_url} />
-                    <div>
-                        <Text strong>{text}</Text>
+                    <div style={{ minWidth: 200, maxWidth: 300 }}>
+                        <Text strong style={{ whiteSpace: 'normal' }}>{text}</Text>
                         <br />
                         <Text type="secondary" style={{ fontSize: '12px' }}>{record.category?.name}</Text>
                     </div>
@@ -105,46 +116,6 @@ const UserDashboard: React.FC = () => {
         },
     ];
 
-    const donationColumns = [
-        {
-            title: 'Donatur',
-            dataIndex: 'user',
-            key: 'user',
-            render: (user: any) => (
-                <Space>
-                    <Avatar src={user?.avatar_url}>{user?.name?.[0]}</Avatar>
-                    <Text>{user?.name || 'Anonim'}</Text>
-                </Space>
-            ),
-        },
-        {
-            title: 'Jumlah',
-            dataIndex: 'amount',
-            key: 'amount',
-            render: (amount: number) => `Rp ${new Intl.NumberFormat('id-ID').format(amount)}`,
-        },
-        {
-            title: 'Campaign',
-            dataIndex: 'campaign',
-            key: 'campaign',
-            render: (campaign: Campaign) => (
-                <Text ellipsis={{ tooltip: campaign.title }} style={{ maxWidth: 200 }}>
-                    {campaign.title}
-                </Text>
-            ),
-        },
-        {
-            title: 'Waktu',
-            dataIndex: 'created_at',
-            key: 'created_at',
-            render: (date: string) => new Date(date).toLocaleDateString('id-ID', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-            }),
-        },
-    ];
-
     return (
         <div style={{ padding: '24px', background: '#f8fafc', minHeight: '100vh' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
@@ -165,20 +136,20 @@ const UserDashboard: React.FC = () => {
 
             <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card bordered={false} loading={isLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                    <Card bordered={false} loading={isDashboardLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
                         <Statistic
                             title={<Text type="secondary">Total Donasi Saya</Text>}
-                            value={data?.overview.total_donations || 0}
+                            value={dashboardData?.overview.total_donations || 0}
                             prefix={<HeartOutlined style={{ color: '#ef4444', marginRight: '8px' }} />}
                             valueStyle={{ fontWeight: 700 }}
                         />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card bordered={false} loading={isLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                    <Card bordered={false} loading={isDashboardLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
                         <Statistic
                             title={<Text type="secondary">Dana Didonasikan</Text>}
-                            value={data?.overview.total_donated_amount || 0}
+                            value={dashboardData?.overview.total_donated_amount || 0}
                             formatter={(value) => `Rp ${new Intl.NumberFormat('id-ID').format(Number(value))}`}
                             prefix={<WalletOutlined style={{ color: '#10b981', marginRight: '8px' }} />}
                             valueStyle={{ fontWeight: 700 }}
@@ -186,20 +157,20 @@ const UserDashboard: React.FC = () => {
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card bordered={false} loading={isLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                    <Card bordered={false} loading={isDashboardLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
                         <Statistic
                             title={<Text type="secondary">Campaign Aktif</Text>}
-                            value={data?.overview.active_campaigns_count || 0}
+                            value={dashboardData?.overview.active_campaigns_count || 0}
                             prefix={<RocketOutlined style={{ color: '#3b82f6', marginRight: '8px' }} />}
                             valueStyle={{ fontWeight: 700 }}
                         />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card bordered={false} loading={isLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                    <Card bordered={false} loading={isDashboardLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
                         <Statistic
                             title={<Text type="secondary">Dana Terkumpul</Text>}
-                            value={data?.overview.total_collected_amount || 0}
+                            value={dashboardData?.overview.total_collected_amount || 0}
                             formatter={(value) => `Rp ${new Intl.NumberFormat('id-ID').format(Number(value))}`}
                             prefix={<LineChartOutlined style={{ color: '#8b5cf6', marginRight: '8px' }} />}
                             valueStyle={{ fontWeight: 700 }}
@@ -214,14 +185,20 @@ const UserDashboard: React.FC = () => {
                         title={<span style={{ fontWeight: 700 }}>Campaign Saya</span>} 
                         bordered={false} 
                         style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        extra={<Button type="link">Lihat Semua</Button>}
+                        extra={<Button type="link" onClick={() => navigate('/my-campaigns')}>Lihat Semua</Button>}
                     >
                         <Table 
                             columns={campaignColumns} 
-                            dataSource={data?.my_campaigns} 
+                            dataSource={campaignsData?.data} 
                             rowKey="id" 
-                            pagination={false} 
-                            loading={isLoading}
+                            loading={isCampaignsLoading}
+                            pagination={{
+                                current: campaignsData?.meta.current_page,
+                                pageSize: campaignsData?.meta.per_page,
+                                total: campaignsData?.meta.total,
+                                onChange: (p) => setCampaignPage(p),
+                                size: 'small'
+                            }}
                             scroll={{ x: true }}
                         />
                     </Card>
@@ -230,15 +207,34 @@ const UserDashboard: React.FC = () => {
                     <Card 
                         title={<span style={{ fontWeight: 700 }}>Donasi Terbaru</span>} 
                         bordered={false} 
-                        style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                        style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', height: '100%' }}
                     >
-                        <Table 
-                            columns={donationColumns} 
-                            dataSource={data?.recent_donations} 
-                            rowKey="id" 
-                            pagination={false} 
-                            loading={isLoading}
-                            showHeader={false}
+                        <List
+                            loading={isDashboardLoading}
+                            dataSource={dashboardData?.recent_donations}
+                            renderItem={(item: Donation) => (
+                                <List.Item>
+                                    <List.Item.Meta
+                                        avatar={<Avatar src={item.user?.avatar_url}>{item.user?.name?.[0]}</Avatar>}
+                                        title={<Text strong>{item.user?.name || 'Anonim'}</Text>}
+                                        description={
+                                            <Space direction="vertical" size={0} style={{ width: '100%' }}>
+                                                <Text type="success" strong>Rp {new Intl.NumberFormat('id-ID').format(item.amount)}</Text>
+                                                <Text ellipsis type="secondary" style={{ fontSize: '12px' }}>
+                                                    {item.campaign?.title}
+                                                </Text>
+                                                <Text type="secondary" style={{ fontSize: '11px' }}>
+                                                    {new Date(item.created_at).toLocaleDateString('id-ID', {
+                                                        day: 'numeric',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    })}
+                                                </Text>
+                                            </Space>
+                                        }
+                                    />
+                                </List.Item>
+                            )}
                         />
                     </Card>
                 </Col>
