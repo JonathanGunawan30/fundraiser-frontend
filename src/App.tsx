@@ -8,6 +8,7 @@ import LandingPage from './pages/LandingPage';
 import UserDashboard from './pages/UserDashboard';
 import UserProfile from './pages/UserProfile';
 import MyCampaigns from './pages/MyCampaigns';
+import MyDonationsPage from './pages/MyDonationsPage';
 import CreateCampaignPage from './pages/CreateCampaignPage';
 import EditCampaignPage from './pages/EditCampaignPage';
 import CampaignDetailPage from './pages/CampaignDetailPage';
@@ -47,8 +48,9 @@ function App() {
           <Route element={<UserDashboardLayout />}>
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/profile" element={<UserProfile />} />
-            <Route path="/my-campaigns" element={<MyCampaigns />} />
-            <Route path="/campaigns/create" element={<CreateCampaignPage />} />
+            <Route path="my-campaigns" element={<MyCampaigns />} />
+            <Route path="my-donations" element={<MyDonationsPage />} />
+            <Route path="campaigns/create" element={<CreateCampaignPage />} />
             <Route path="/campaigns/edit/:id" element={<EditCampaignPage />} />
           </Route>
 
