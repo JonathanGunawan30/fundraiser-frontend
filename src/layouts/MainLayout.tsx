@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import api from '../api/axios';
 import type {SiteSetting} from '../types';
+import { useAuth } from '../lib/AuthContext';
 
 const { Header, Content, Footer } = Layout;
 const { Text, Title, Paragraph } = Typography;
@@ -24,16 +25,12 @@ const { useBreakpoint } = Grid;
 const MainLayout: React.FC = () => {
     const navigate = useNavigate();
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('user_role');
-    const [isLoggedIn] = useState(() => !!(token && role === 'user'));
-    const [userName] = useState(() => localStorage.getItem('user_name') || '');
-    const [userAvatar] = useState(() => localStorage.getItem('user_avatar') || '');
+    const { user, isLoggedIn, logout } = useAuth();
     const screens = useBreakpoint();
     const isMobile = !screens.md;
 
     const handleLogout = () => {
-        localStorage.clear();
+        logout();
         navigate('/');
     };
 
@@ -118,11 +115,11 @@ const MainLayout: React.FC = () => {
                 {!isMobile && (
                     <Space size="large">
                         <Button type="text" icon={<SearchOutlined />} style={{ fontSize: '18px', color: '#475569' }} />
-                        {isLoggedIn ? (
+                        {isLoggedIn && user ? (
                             <Dropdown menu={userMenu} placement="bottomRight" arrow>
                                 <Space style={{ cursor: 'pointer' }}>
-                                    <Avatar src={userAvatar} icon={<UserOutlined />} />
-                                    <Text strong>{userName.split(' ')[0]}</Text>
+                                    <Avatar src={user.avatar} icon={<UserOutlined />} />
+                                    <Text strong>{user.name.split(' ')[0]}</Text>
                                 </Space>
                             </Dropdown>
                         ) : (
@@ -140,9 +137,9 @@ const MainLayout: React.FC = () => {
                 {isMobile && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <Button type="text" icon={<SearchOutlined />} style={{ fontSize: '20px', color: '#0f172a' }} />
-                        {isLoggedIn && (
+                        {isLoggedIn && user && (
                             <Dropdown menu={userMenu} placement="bottomRight" arrow>
-                                <Avatar src={userAvatar} icon={<UserOutlined />} />
+                                <Avatar src={user.avatar} icon={<UserOutlined />} />
                             </Dropdown>
                         )}
                         <Button type="text" icon={<MenuOutlined style={{ fontSize: 22 }} />} onClick={() => setDrawerOpen(true)} style={{ color: '#0f172a', paddingRight: 0 }} />
