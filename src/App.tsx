@@ -10,6 +10,7 @@ import MyCampaigns from './pages/MyCampaigns';
 import CreateCampaignPage from './pages/CreateCampaignPage';
 import EditCampaignPage from './pages/EditCampaignPage';
 import CampaignDetailPage from './pages/CampaignDetailPage';
+import DonationFinishPage from './pages/DonationFinishPage';
 import AdminDashboard from './pages/AdminDashboard';
 import LoginPage from './pages/LoginPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
@@ -35,6 +36,7 @@ function App() {
             <Route index element={<LandingPage />} />
             <Route path="campaigns" element={<div>Explore Campaigns Page (Work in Progress)</div>} />
             <Route path="campaigns/:slug" element={<CampaignDetailPage />} />
+            <Route path="donation/finish" element={<DonationFinishPage />} />
             <Route path="auth/login" element={<LoginPage />} />
             <Route path="auth/callback" element={<AuthCallbackPage />} />
           </Route>

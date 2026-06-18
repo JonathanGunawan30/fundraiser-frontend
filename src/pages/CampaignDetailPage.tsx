@@ -28,6 +28,7 @@ import {
 } from '@ant-design/icons';
 import api from '../api/axios';
 import type { Campaign } from '../types';
+import DonationModal from '../components/DonationModal';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -35,8 +36,10 @@ const CampaignDetailPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
     const currentUserId = Number(localStorage.getItem('user_id'));
+    const isLoggedIn = !!localStorage.getItem('token');
+    const [isDonationModalVisible, setIsDonationModalVisible] = React.useState(false);
 
-    const { data: campaign, isLoading, isError } = useQuery<Campaign>({
+    const { data: campaign, isLoading, isError, refetch } = useQuery<Campaign>({
         queryKey: ['campaign', slug],
         queryFn: async () => {
             const response = await api.get(`/campaigns/${slug}`);
@@ -44,6 +47,14 @@ const CampaignDetailPage: React.FC = () => {
         },
         enabled: !!slug,
     });
+
+    const handleDonateClick = () => {
+        if (!isLoggedIn) {
+            navigate('/login', { state: { from: `/campaigns/${slug}` } });
+            return;
+        }
+        setIsDonationModalVisible(true);
+    };
 
     if (isLoading) {
         return (
@@ -152,7 +163,13 @@ const CampaignDetailPage: React.FC = () => {
 
                         <Space direction="vertical" style={{ width: '100%' }} size="middle">
                             {campaign.status === 'active' ? (
-                                <Button type="primary" size="large" block style={{ height: 50, borderRadius: 12, fontWeight: 700 }}>
+                                <Button 
+                                    type="primary" 
+                                    size="large" 
+                                    block 
+                                    onClick={handleDonateClick}
+                                    style={{ height: 50, borderRadius: 12, fontWeight: 700 }}
+                                >
                                     Donasi Sekarang
                                 </Button>
                             ) : (
@@ -194,6 +211,14 @@ const CampaignDetailPage: React.FC = () => {
                     </Card>
                 </Col>
             </Row>
+
+            <DonationModal 
+                visible={isDonationModalVisible}
+                onCancel={() => setIsDonationModalVisible(false)}
+                campaignId={campaign.id}
+                campaignTitle={campaign.title}
+                onSuccess={() => refetch()}
+            />
         </div>
     );
 };
