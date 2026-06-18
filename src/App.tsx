@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { App as AntdApp } from 'antd';
+import { AuthProvider } from './lib/AuthContext';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 import UserDashboardLayout from './layouts/UserDashboardLayout';
@@ -29,8 +30,9 @@ import SiteSettings from './pages/admin/SiteSettings';
 function App() {
   return (
     <AntdApp>
-      <BrowserRouter>
-        <Routes>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
           {/* Public Routes */}
           <Route path="/" element={<MainLayout />}>
             <Route index element={<LandingPage />} />
@@ -71,6 +73,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </AuthProvider>
     </AntdApp>
   );
 }
