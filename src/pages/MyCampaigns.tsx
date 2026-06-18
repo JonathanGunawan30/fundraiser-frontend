@@ -57,10 +57,10 @@ const MyCampaigns: React.FC = () => {
             dataIndex: 'title',
             key: 'title',
             render: (text: string, record: Campaign) => (
-                <Space>
+                <Space align="start">
                     <Avatar shape="square" size={64} src={record.cover_image_url} />
-                    <div>
-                        <Text strong style={{ fontSize: '16px' }}>{text}</Text>
+                    <div style={{ minWidth: 250, maxWidth: 400 }}>
+                        <Text strong style={{ fontSize: '16px', whiteSpace: 'normal' }}>{text}</Text>
                         <br />
                         <Tag color="blue">{record.category?.name}</Tag>
                     </div>
