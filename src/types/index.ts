@@ -22,6 +22,15 @@ export interface Tag {
     slug: string;
 }
 
+export interface CampaignUpdate {
+    id: number;
+    campaign_id: number;
+    title: string;
+    content: string;
+    image_url?: string;
+    created_at: string;
+}
+
 export interface Banner {
     id: number;
     title: string;
