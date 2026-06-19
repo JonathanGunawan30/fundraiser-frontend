@@ -12,6 +12,7 @@ import MyDonationsPage from './pages/MyDonationsPage';
 import CreateCampaignPage from './pages/CreateCampaignPage';
 import EditCampaignPage from './pages/EditCampaignPage';
 import CampaignDetailPage from './pages/CampaignDetailPage';
+import ExploreCampaignsPage from './pages/ExploreCampaignsPage';
 import DonationFinishPage from './pages/DonationFinishPage';
 import AdminDashboard from './pages/AdminDashboard';
 import LoginPage from './pages/LoginPage';
@@ -37,7 +38,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<MainLayout />}>
             <Route index element={<LandingPage />} />
-            <Route path="campaigns" element={<div>Explore Campaigns Page (Work in Progress)</div>} />
+            <Route path="campaigns" element={<ExploreCampaignsPage />} />
             <Route path="campaigns/:slug" element={<CampaignDetailPage />} />
             <Route path="donation/finish" element={<DonationFinishPage />} />
             <Route path="auth/login" element={<LoginPage />} />
