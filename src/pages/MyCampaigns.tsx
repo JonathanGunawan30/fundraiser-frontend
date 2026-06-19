@@ -9,11 +9,13 @@ import {
     DeleteOutlined,
     ClockCircleOutlined,
     CheckCircleOutlined,
-    InfoCircleOutlined
+    InfoCircleOutlined,
+    NotificationOutlined
 } from '@ant-design/icons';
 import api from '../api/axios';
 import type { Campaign, PaginatedResponse } from '../types';
 import { getErrorMessages } from '../lib/utils';
+import CampaignUpdateModal from '../components/CampaignUpdateModal';
 
 const { Title, Text } = Typography;
 
@@ -22,6 +24,10 @@ const MyCampaigns: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
+    
+    // For Update Modal
+    const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
+    const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
 
     const { data, isLoading } = useQuery<PaginatedResponse<Campaign>>({
         queryKey: ['my-campaigns', page],
@@ -128,6 +134,18 @@ const MyCampaigns: React.FC = () => {
             align: 'right' as const,
             render: (_: any, record: Campaign) => (
                 <Space size="middle">
+                    {record.status === 'active' && (
+                        <Tooltip title="Posting Update">
+                            <Button 
+                                type="text" 
+                                icon={<NotificationOutlined style={{ color: '#10b981' }} />} 
+                                onClick={() => {
+                                    setSelectedCampaignId(record.id);
+                                    setIsUpdateModalVisible(true);
+                                }}
+                            />
+                        </Tooltip>
+                    )}
                     <Tooltip title="Lihat Detail">
                         <Button 
                             type="text" 
@@ -198,6 +216,20 @@ const MyCampaigns: React.FC = () => {
                     scroll={{ x: true }}
                 />
             </Card>
+
+            {selectedCampaignId && (
+                <CampaignUpdateModal
+                    visible={isUpdateModalVisible}
+                    onCancel={() => {
+                        setIsUpdateModalVisible(false);
+                        setSelectedCampaignId(null);
+                    }}
+                    campaignId={selectedCampaignId}
+                    onSuccess={() => {
+                        notification.success({ message: 'Update diposting', placement: 'topRight' });
+                    }}
+                />
+            )}
         </div>
     );
 };
