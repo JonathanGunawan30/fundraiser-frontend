@@ -28,6 +28,7 @@ import AuditLogList from './pages/admin/AuditLogList';
 import UserManagement from './pages/admin/UserManagement';
 import AdminProfile from './pages/admin/AdminProfile';
 import SiteSettings from './pages/admin/SiteSettings';
+import WithdrawalManagement from './pages/admin/WithdrawalManagement';
 
 function App() {
   return (
@@ -70,6 +71,7 @@ function App() {
             <Route path="users" element={<UserManagement />} />
             <Route path="settings" element={<SiteSettings />} />
             <Route path="profile" element={<AdminProfile />} />
+            <Route path="withdrawals" element={<WithdrawalManagement />} />
           </Route>
 
           {/* Fallback */}

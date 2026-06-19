@@ -136,3 +136,44 @@ export interface UserDashboardData {
     recent_donations: Donation[];
 }
 
+export interface Withdrawal {
+    id: number;
+    campaign: {
+        id: number;
+        title: string;
+    };
+    user: {
+        id: number;
+        name: string;
+    };
+    amount: number;
+    bank_info: {
+        bank_name: string;
+        account_number: string;
+        account_name: string;
+    };
+    status: 'pending' | 'completed' | 'rejected';
+    rejection_reason?: string;
+    transfer_proof_url?: string;
+    processed_at?: string;
+    processed_by?: {
+        id: number;
+        name: string;
+    };
+    created_at: string;
+}
+
+export interface CreateWithdrawalPayload {
+    campaign_id: number;
+    amount: number;
+    bank_name: string;
+    account_number: string;
+    account_name: string;
+}
+
+export interface ProcessWithdrawalPayload {
+    status: 'completed' | 'rejected';
+    transfer_proof?: File;
+    rejection_reason?: string;
+}
+

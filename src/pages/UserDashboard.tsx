@@ -10,17 +10,26 @@ import {
     PlusOutlined,
     ArrowRightOutlined,
     EyeOutlined,
-    EditOutlined
+    EditOutlined,
+    FileImageOutlined
 } from '@ant-design/icons';
 import api from '../api/axios';
-import type { UserDashboardData, Campaign, Donation, PaginatedResponse } from '../types';
+import type { UserDashboardData, Campaign, Donation, PaginatedResponse, Withdrawal } from '../types';
+import { useAuth } from '../lib/AuthContext';
+import WithdrawalModal from '../components/WithdrawalModal';
 
 const { Title, Text } = Typography;
 
 const UserDashboard: React.FC = () => {
     const { notification } = App.useApp();
     const navigate = useNavigate();
+    const { user: authUser } = useAuth();
     const [campaignPage, setCampaignPage] = useState(1);
+
+    // Withdrawal Modal States
+    const [isWithdrawalModalVisible, setIsWithdrawalModalVisible] = useState(false);
+    const [withdrawalCampaign, setWithdrawalCampaign] = useState<Campaign | null>(null);
+    const [withdrawalBalance, setWithdrawalBalance] = useState<number>(0);
 
     const { data: dashboardData, isLoading: isDashboardLoading } = useQuery<UserDashboardData>({
         queryKey: ['user-dashboard'],
@@ -39,6 +48,32 @@ const UserDashboard: React.FC = () => {
             return response.data;
         },
     });
+
+    // Fetch withdrawals list with high limit for client-side filtering and balance calculation
+    const { data: withdrawalsData, isLoading: isWithdrawalsLoading, refetch: refetchWithdrawals } = useQuery<PaginatedResponse<Withdrawal>>({
+        queryKey: ['user-withdrawals'],
+        queryFn: async () => {
+            const response = await api.get('/withdrawals', { 
+                params: { per_page: 100 } 
+            });
+            return response.data;
+        },
+    });
+
+    const myWithdrawals = React.useMemo(() => {
+        if (!withdrawalsData?.data || !authUser) return [];
+        // Filter where owner user matches authenticated user
+        return withdrawalsData.data.filter(w => Number(w.user?.id) === Number(authUser.id));
+    }, [withdrawalsData, authUser]);
+
+    const getCampaignWithdrawalInfo = (campaignId: number, collectedAmount: number) => {
+        const completedSum = myWithdrawals
+            .filter(w => w.campaign?.id === campaignId && w.status === 'completed')
+            .reduce((sum, w) => sum + w.amount, 0);
+        const hasPending = myWithdrawals.some(w => w.campaign?.id === campaignId && w.status === 'pending');
+        const available = collectedAmount - completedSum;
+        return { available, hasPending };
+    };
 
     const campaignColumns = [
         {
@@ -73,6 +108,18 @@ const UserDashboard: React.FC = () => {
             ),
         },
         {
+            title: 'Saldo Tersedia',
+            key: 'available_balance',
+            render: (_: any, record: Campaign) => {
+                const { available } = getCampaignWithdrawalInfo(record.id, record.collected_amount);
+                return (
+                    <Text strong style={{ color: '#8b5cf6' }}>
+                        Rp {new Intl.NumberFormat('id-ID').format(available)}
+                    </Text>
+                );
+            }
+        },
+        {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
@@ -87,33 +134,141 @@ const UserDashboard: React.FC = () => {
         {
             title: 'Aksi',
             key: 'action',
-            render: (_: any, record: Campaign) => (
-                <Space onClick={(e) => e.stopPropagation()}>
-                    <Tooltip title="Lihat Detail">
-                        <Button 
-                            type="text" 
-                            size="small"
-                            icon={<EyeOutlined />} 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/campaigns/${record.slug}`);
-                            }}
-                        />
-                    </Tooltip>
-                    <Tooltip title="Edit Campaign">
-                        <Button 
-                            type="text" 
-                            size="small"
-                            icon={<EditOutlined style={{ color: '#1677ff' }} />} 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/campaigns/edit/${record.id}`);
-                            }}
-                        />
-                    </Tooltip>
-                </Space>
-            ),
+            render: (_: any, record: Campaign) => {
+                const { available, hasPending } = getCampaignWithdrawalInfo(record.id, record.collected_amount);
+                const isWithdrawalAllowed = (record.status === 'active' || record.status === 'completed') && available >= 50000 && !hasPending;
+
+                return (
+                    <Space onClick={(e) => e.stopPropagation()}>
+                        <Tooltip title="Lihat Detail">
+                            <Button 
+                                type="text" 
+                                size="small"
+                                icon={<EyeOutlined />} 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/campaigns/${record.slug}`);
+                                }}
+                            />
+                        </Tooltip>
+                        <Tooltip title="Edit Campaign">
+                            <Button 
+                                type="text" 
+                                size="small"
+                                icon={<EditOutlined style={{ color: '#1677ff' }} />} 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/campaigns/edit/${record.id}`);
+                                }}
+                            />
+                        </Tooltip>
+                        {(record.status === 'active' || record.status === 'completed') && (
+                            <Tooltip title={
+                                hasPending 
+                                    ? "Ada pengajuan pencairan yang tertunda" 
+                                    : available < 50000 
+                                        ? "Minimal pencairan adalah Rp 50.000" 
+                                        : "Cairkan Dana"
+                            }>
+                                <Button 
+                                    type="text" 
+                                    size="small"
+                                    disabled={!isWithdrawalAllowed}
+                                    icon={<WalletOutlined style={{ color: isWithdrawalAllowed ? '#8b5cf6' : undefined }} />} 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setWithdrawalCampaign(record);
+                                        setWithdrawalBalance(available);
+                                        setIsWithdrawalModalVisible(true);
+                                    }}
+                                />
+                            </Tooltip>
+                        )}
+                    </Space>
+                );
+            },
         },
+    ];
+
+    const withdrawalColumns = [
+        {
+            title: 'Campaign',
+            dataIndex: ['campaign', 'title'],
+            key: 'campaign_title',
+            render: (title: string) => <Text strong>{title}</Text>
+        },
+        {
+            title: 'Nominal Penarikan',
+            dataIndex: 'amount',
+            key: 'amount',
+            render: (amount: number) => `Rp ${new Intl.NumberFormat('id-ID').format(amount)}`,
+        },
+        {
+            title: 'Info Rekening',
+            key: 'bank_info',
+            render: (_: any, record: Withdrawal) => (
+                <div>
+                    <Text>{record.bank_info?.bank_name}</Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                        {record.bank_info?.account_number} a.n {record.bank_info?.account_name}
+                    </Text>
+                </div>
+            )
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status: string, record: Withdrawal) => {
+                let color = 'default';
+                if (status === 'pending') color = 'warning';
+                if (status === 'completed') color = 'success';
+                if (status === 'rejected') color = 'error';
+                return (
+                    <Space direction="vertical" size={0}>
+                        <Tag color={color}>{status.toUpperCase()}</Tag>
+                        {status === 'rejected' && record.rejection_reason && (
+                            <Text type="danger" style={{ fontSize: '11px', display: 'block', marginTop: '4px', maxWidth: '200px' }}>
+                                Alasan: {record.rejection_reason}
+                            </Text>
+                        )}
+                    </Space>
+                );
+            }
+        },
+        {
+            title: 'Tanggal',
+            dataIndex: 'created_at',
+            key: 'created_at',
+            render: (date: string) => new Date(date).toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        },
+        {
+            title: 'Bukti',
+            key: 'proof',
+            render: (_: any, record: Withdrawal) => {
+                if (record.status === 'completed' && record.transfer_proof_url) {
+                    return (
+                        <Button 
+                            type="primary" 
+                            size="small" 
+                            ghost
+                            icon={<FileImageOutlined />}
+                            onClick={() => window.open(record.transfer_proof_url, '_blank')}
+                        >
+                            Bukti Transfer
+                        </Button>
+                    );
+                }
+                return '-';
+            }
+        }
     ];
 
     return (
@@ -239,6 +394,44 @@ const UserDashboard: React.FC = () => {
                     </Card>
                 </Col>
             </Row>
+
+            <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
+                <Col span={24}>
+                    <Card 
+                        title={<span style={{ fontWeight: 700 }}>Riwayat Pencairan Dana</span>} 
+                        bordered={false} 
+                        style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    >
+                        <Table 
+                            columns={withdrawalColumns} 
+                            dataSource={myWithdrawals} 
+                            rowKey="id" 
+                            loading={isWithdrawalsLoading}
+                            pagination={{
+                                pageSize: 5,
+                                size: 'small'
+                            }}
+                            scroll={{ x: true }}
+                        />
+                    </Card>
+                </Col>
+            </Row>
+
+            {withdrawalCampaign && (
+                <WithdrawalModal
+                    visible={isWithdrawalModalVisible}
+                    onCancel={() => {
+                        setIsWithdrawalModalVisible(false);
+                        setWithdrawalCampaign(null);
+                    }}
+                    campaignId={withdrawalCampaign.id}
+                    campaignTitle={withdrawalCampaign.title}
+                    availableBalance={withdrawalBalance}
+                    onSuccess={() => {
+                        refetchWithdrawals();
+                    }}
+                />
+            )}
         </div>
     );
 };
