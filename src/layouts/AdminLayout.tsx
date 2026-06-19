@@ -12,7 +12,8 @@ import {
     BellOutlined,
     DashboardOutlined,
     AppstoreOutlined,
-    SafetyCertificateOutlined
+    SafetyCertificateOutlined,
+    BankOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, theme, Button, Avatar, Dropdown, Space, Typography, ConfigProvider, Drawer, Grid } from 'antd';
@@ -45,6 +46,7 @@ const items: MenuItem[] = [
         getItem(<Link to="/admin/categories">Categories</Link>, '/admin/categories'),
         getItem(<Link to="/admin/tags">Tags</Link>, '/admin/tags'),
     ]),
+    getItem(<Link to="/admin/withdrawals">Withdrawals</Link>, '/admin/withdrawals', <BankOutlined />),
     getItem('Management', 'mgmt-grp', <AppstoreOutlined />, [
         getItem(<Link to="/admin/banners">Banners</Link>, '/admin/banners', <PictureOutlined />),
         getItem(<Link to="/admin/faqs">FAQs</Link>, '/admin/faqs', <QuestionCircleOutlined />),
