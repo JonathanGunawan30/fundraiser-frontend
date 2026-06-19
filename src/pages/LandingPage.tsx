@@ -196,48 +196,51 @@ const LandingPage: React.FC = () => {
                                     <Card loading bordered={false} style={{ borderRadius: 16 }} />
                                 </Col>
                             ))
-                        ) : campaigns?.map((campaign: Campaign) => (
-                            <Col xs={24} sm={12} lg={6} key={campaign.id}>
-                                <Card
-                                    hoverable
-                                    bordered={false}
-                                    style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', height: '100%' }}
-                                    cover={<img alt={campaign.title} src={campaign.cover_image_url} style={{ height: 180, objectFit: 'cover' }} />}
-                                    bodyStyle={{ padding: 20 }}
-                                    onClick={() => navigate(`/campaigns/${campaign.slug}`)}
-                                >
-                                    <Tag color="blue" style={{ marginBottom: 12, borderRadius: 4, border: 'none', background: '#f0f7ff', color: '#1677ff', fontWeight: 600 }}>
-                                        {campaign.category?.name || 'Kategori'}
-                                    </Tag>
-                                    <Title level={5} style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.4, height: '2.8rem', overflow: 'hidden' }}>
-                                        {campaign.title}
-                                    </Title>
-                                    
-                                    <div style={{ marginBottom: 12 }}>
-                                        <Progress 
-                                            percent={Math.round((campaign.collected_amount / campaign.goal_amount) * 100)} 
-                                            strokeColor="#1677ff" 
-                                            showInfo={false} 
-                                            strokeWidth={6} 
-                                        />
-                                    </div>
-                                    
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <Text strong style={{ color: '#1677ff' }}>Rp {new Intl.NumberFormat('id-ID').format(campaign.collected_amount)}</Text>
+                        ) : campaigns?.map((campaign: Campaign) => {
+                            const daysLeft = Math.max(0, Math.ceil((new Date(campaign.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
+                            return (
+                                <Col xs={24} sm={12} lg={6} key={campaign.id}>
+                                    <Card
+                                        hoverable
+                                        bordered={false}
+                                        style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', height: '100%' }}
+                                        cover={<img alt={campaign.title} src={campaign.cover_image_url} style={{ height: 180, objectFit: 'cover' }} />}
+                                        bodyStyle={{ padding: 20 }}
+                                        onClick={() => navigate(`/campaigns/${campaign.slug}`)}
+                                    >
+                                        <Tag color="blue" style={{ marginBottom: 12, borderRadius: 4, border: 'none', background: '#f0f7ff', color: '#1677ff', fontWeight: 600 }}>
+                                            {campaign.category?.name || 'Kategori'}
+                                        </Tag>
+                                        <Title level={5} style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.4, height: '2.8rem', overflow: 'hidden' }}>
+                                            {campaign.title}
+                                        </Title>
+                                        
+                                        <div style={{ marginBottom: 12 }}>
+                                            <Progress 
+                                                percent={Math.round((campaign.collected_amount / campaign.goal_amount) * 100)} 
+                                                strokeColor="#1677ff" 
+                                                showInfo={false} 
+                                                strokeWidth={6} 
+                                            />
                                         </div>
-                                        <Text strong>{Math.round((campaign.collected_amount / campaign.goal_amount) * 100)}%</Text>
-                                    </div>
-                                    
-                                    <Divider style={{ margin: '12px 0' }} />
-                                    
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Text type="secondary" style={{ fontSize: '0.85rem' }}>{campaign.donor_count} Donatur</Text>
-                                        <Text type="secondary" style={{ fontSize: '0.85rem' }}><CalendarOutlined /> 30 hari lagi</Text>
-                                    </div>
-                                </Card>
-                            </Col>
-                        ))}
+                                        
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Text strong style={{ color: '#1677ff' }}>Rp {new Intl.NumberFormat('id-ID').format(campaign.collected_amount)}</Text>
+                                            </div>
+                                            <Text strong>{Math.round((campaign.collected_amount / campaign.goal_amount) * 100)}%</Text>
+                                        </div>
+                                        
+                                        <Divider style={{ margin: '12px 0' }} />
+                                        
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <Text type="secondary" style={{ fontSize: '0.85rem' }}>{campaign.donor_count} Donatur</Text>
+                                            <Text type="secondary" style={{ fontSize: '0.85rem' }}><CalendarOutlined /> {daysLeft} hari lagi</Text>
+                                        </div>
+                                    </Card>
+                                </Col>
+                            );
+                        })}
                     </Row>
                 </div>
             </section>
