@@ -29,6 +29,7 @@ import UserManagement from './pages/admin/UserManagement';
 import AdminProfile from './pages/admin/AdminProfile';
 import SiteSettings from './pages/admin/SiteSettings';
 import WithdrawalManagement from './pages/admin/WithdrawalManagement';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
   return (
@@ -75,7 +76,7 @@ function App() {
           </Route>
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
       </AuthProvider>
