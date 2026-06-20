@@ -18,6 +18,7 @@ import {
 import type { MenuProps } from 'antd';
 import { Layout, Menu, theme, Button, Avatar, Dropdown, Space, Typography, ConfigProvider, Drawer, Grid } from 'antd';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
+import NotFoundPage from '../pages/NotFoundPage';
 
 const { Header, Content, Footer, Sider } = Layout;
 const { Text, Title } = Typography;
@@ -164,6 +165,13 @@ const AdminLayout: React.FC = () => {
             />
         </div>
     );
+
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('user_role');
+
+    if (!token || role !== 'admin') {
+        return <NotFoundPage />;
+    }
 
     return (
         <ConfigProvider

@@ -8,7 +8,7 @@ import {
     MenuOutlined
 } from '@ant-design/icons';
 import { Layout, Menu, Button, Avatar, Dropdown, Space, Typography, ConfigProvider, Drawer, Grid } from 'antd';
-import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, Link, useLocation, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
 
@@ -106,6 +106,13 @@ const UserDashboardLayout: React.FC = () => {
             icon: <UserOutlined />,
         },
     ];
+
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('user_role');
+
+    if (!token || role !== 'user') {
+        return <Navigate to="/auth/login" state={{ showToast: true }} replace />;
+    }
 
     return (
         <ConfigProvider

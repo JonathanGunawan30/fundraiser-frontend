@@ -1,9 +1,29 @@
-import { Card, Typography, Space, Button } from 'antd';
+import React, { useEffect, useRef } from 'react';
+import { Card, Typography, Space, Button, App } from 'antd';
 import { GoogleOutlined, GithubOutlined } from '@ant-design/icons';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
 const LoginPage: React.FC = () => {
+    const { notification } = App.useApp();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const hasShownToast = useRef(false);
+
+    useEffect(() => {
+        if (location.state?.showToast && !hasShownToast.current) {
+            hasShownToast.current = true;
+            notification.warning({
+                message: 'Akses Dibatasi',
+                description: 'Silakan login terlebih dahulu untuk mengakses halaman tersebut.',
+                placement: 'topRight'
+            });
+            // Clear react-router location state to prevent repeating on refresh
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location, notification, navigate]);
+
     const handleSocialLogin = (provider: string) => {
         const baseUrl = import.meta.env.VITE_API_URL.replace('/api', '');
         window.location.href = `${baseUrl}/auth/user/${provider}/redirect`;
