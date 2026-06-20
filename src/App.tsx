@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { App as AntdApp } from 'antd';
+import { App as AntdApp, Spin } from 'antd';
 import { AuthProvider } from './lib/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import api from './api/axios';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 import UserDashboardLayout from './layouts/UserDashboardLayout';
@@ -30,6 +32,33 @@ import AdminProfile from './pages/admin/AdminProfile';
 import SiteSettings from './pages/admin/SiteSettings';
 import WithdrawalManagement from './pages/admin/WithdrawalManagement';
 import NotFoundPage from './pages/NotFoundPage';
+import MaintenancePage from './pages/MaintenancePage';
+
+const MaintenanceGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { data: settings, isLoading } = useQuery({
+        queryKey: ['site-settings'],
+        queryFn: async () => {
+            const response = await api.get('/site-settings');
+            return response.data.data;
+        },
+    });
+
+    const isMaintenance = settings?.find((s: any) => s.key === 'maintenance_mode')?.value === '1';
+
+    if (isLoading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
+                <Spin size="large" tip="Memuat konfigurasi..." />
+            </div>
+        );
+    }
+
+    if (isMaintenance) {
+        return <MaintenancePage />;
+    }
+
+    return <>{children}</>;
+};
 
 function App() {
   return (
@@ -38,7 +67,8 @@ function App() {
         <BrowserRouter>
           <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<MainLayout />}>
+          {/* Public Routes */}
+          <Route path="/" element={<MaintenanceGuard><MainLayout /></MaintenanceGuard>}>
             <Route index element={<LandingPage />} />
             <Route path="campaigns" element={<ExploreCampaignsPage />} />
             <Route path="campaigns/:slug" element={<CampaignDetailPage />} />
@@ -48,7 +78,7 @@ function App() {
           </Route>
 
           {/* User Authenticated Routes */}
-          <Route element={<UserDashboardLayout />}>
+          <Route element={<MaintenanceGuard><UserDashboardLayout /></MaintenanceGuard>}>
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/profile" element={<UserProfile />} />
             <Route path="my-campaigns" element={<MyCampaigns />} />
@@ -76,7 +106,7 @@ function App() {
           </Route>
 
           {/* Fallback */}
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<MaintenanceGuard><NotFoundPage /></MaintenanceGuard>} />
         </Routes>
       </BrowserRouter>
       </AuthProvider>
