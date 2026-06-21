@@ -63,6 +63,7 @@ export interface Campaign {
     tags?: Tag[];
     images?: { id: number; image_url: string; order_index: number }[];
     updates?: any[];
+    donations?: Donation[];
 }
 
 export interface SiteSetting {

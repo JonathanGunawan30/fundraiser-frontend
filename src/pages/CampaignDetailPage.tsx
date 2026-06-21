@@ -34,7 +34,7 @@ import {
     DeleteOutlined
 } from '@ant-design/icons';
 import api from '../api/axios';
-import type { Campaign, CampaignUpdate } from '../types';
+import type { Campaign, CampaignUpdate, Donation } from '../types';
 import DonationModal from '../components/DonationModal';
 import CampaignUpdateModal from '../components/CampaignUpdateModal';
 
@@ -181,6 +181,93 @@ const CampaignDetailPage: React.FC = () => {
                     ) : (
                         <div style={{ textAlign: 'center', padding: '60px 0' }}>
                             <Empty description="Belum ada perkembangan yang dibagikan." />
+                        </div>
+                    )}
+                </div>
+            )
+        },
+        {
+            key: 'donations',
+            label: `Donatur (${campaign.donations?.length || 0})`,
+            children: (
+                <div style={{ paddingTop: 24 }}>
+                    {campaign.donations && campaign.donations.length > 0 ? (
+                        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                            {campaign.donations.map((donation: Donation) => {
+                                // ponytail: check is_anonymous to display placeholder name/avatar
+                                const name = donation.is_anonymous ? 'Orang Baik' : (donation.user?.name || 'Anonim');
+                                const avatarUrl = donation.is_anonymous ? undefined : donation.user?.avatar_url;
+                                const formattedAmount = new Intl.NumberFormat('id-ID', {
+                                    style: 'currency',
+                                    currency: 'IDR',
+                                    maximumFractionDigits: 0
+                                }).format(donation.amount);
+
+                                // ponytail: simple relative time math
+                                const donationDate = new Date(donation.created_at);
+                                const diffMs = new Date().getTime() - donationDate.getTime();
+                                const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                                let relativeTime = '';
+                                if (diffHrs < 1) {
+                                    relativeTime = 'Baru saja';
+                                } else if (diffHrs < 24) {
+                                    relativeTime = `${diffHrs} jam yang lalu`;
+                                } else {
+                                    const diffDays = Math.floor(diffHrs / 24);
+                                    relativeTime = `${diffDays} hari yang lalu`;
+                                }
+
+                                return (
+                                    <div 
+                                        key={donation.id} 
+                                        style={{ 
+                                            display: 'flex', 
+                                            gap: 16, 
+                                            alignItems: 'flex-start', 
+                                            background: '#f8fafc', 
+                                            padding: 16, 
+                                            borderRadius: 16, 
+                                            border: '1px solid #f1f5f9' 
+                                        }}
+                                    >
+                                        <Avatar 
+                                            size={48} 
+                                            src={avatarUrl} 
+                                            icon={<UserOutlined />} 
+                                            style={{ background: '#e2e8f0', color: '#64748b', flexShrink: 0 }} 
+                                        />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4, marginBottom: 4 }}>
+                                                <Text strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{name}</Text>
+                                                <Text type="secondary" style={{ fontSize: '0.8rem' }}>{relativeTime}</Text>
+                                            </div>
+                                            <div style={{ marginBottom: donation.message ? 8 : 0 }}>
+                                                <Text strong style={{ color: '#10b981', fontSize: '1rem' }}>{formattedAmount}</Text>
+                                            </div>
+                                            {donation.message && (
+                                                <Paragraph style={{ 
+                                                    margin: 0, 
+                                                    color: '#475569', 
+                                                    fontStyle: 'italic', 
+                                                    background: '#ffffff', 
+                                                    padding: '10px 14px', 
+                                                    borderRadius: '0 12px 12px 12px', 
+                                                    border: '1px solid #e2e8f0', 
+                                                    display: 'inline-block', 
+                                                    maxWidth: '100%', 
+                                                    wordBreak: 'break-word' 
+                                                }}>
+                                                    "{donation.message}"
+                                                </Paragraph>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </Space>
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                            <Empty description="Belum ada donatur untuk campaign ini." />
                         </div>
                     )}
                 </div>
