@@ -11,7 +11,8 @@ import {
     Input, 
     Segmented, 
     Pagination, 
-    Empty 
+    Empty,
+    Button
 } from 'antd';
 import { 
     SearchOutlined, 
@@ -19,15 +20,18 @@ import {
     LayoutOutlined,
     ClockCircleOutlined
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
-import type { Campaign, PaginatedResponse } from '../types';
+import type { Campaign, PaginatedResponse, CampaignCategory } from '../types';
 
 const { Title, Text, Paragraph } = Typography;
 
 const ExploreCampaignsPage: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const categoryFilter = searchParams.get('category') || '';
+
     // Layout options: 
     // - 'grid-4': 4 columns on desktop (default), 1 on mobile (default)
     // - 'grid-2': 2 columns on desktop, 2 on mobile
@@ -36,6 +40,20 @@ const ExploreCampaignsPage: React.FC = () => {
     const [debouncedKeyword, setDebouncedKeyword] = useState<string>('');
     const [page, setPage] = useState<number>(1);
     const perPage = 8;
+
+    // Fetch categories for the filter bar
+    const { data: categories } = useQuery<CampaignCategory[]>({
+        queryKey: ['categories'],
+        queryFn: async () => {
+            const response = await api.get('/campaign-categories');
+            return response.data.data;
+        },
+    });
+
+    // Reset page on category filter change
+    useEffect(() => {
+        setPage(1);
+    }, [categoryFilter]);
 
     // Debounce search input
     useEffect(() => {
@@ -51,7 +69,7 @@ const ExploreCampaignsPage: React.FC = () => {
 
     // Fetch campaigns
     const { data: campaignResponse, isLoading } = useQuery<PaginatedResponse<Campaign>>({
-        queryKey: ['campaigns-explore', debouncedKeyword, page],
+        queryKey: ['campaigns-explore', debouncedKeyword, page, categoryFilter],
         queryFn: async () => {
             const endpoint = debouncedKeyword ? '/campaigns/search' : '/campaigns';
             const params: Record<string, any> = {
@@ -60,6 +78,9 @@ const ExploreCampaignsPage: React.FC = () => {
             };
             if (debouncedKeyword) {
                 params.keyword = debouncedKeyword;
+            }
+            if (categoryFilter) {
+                params.category = categoryFilter;
             }
             const response = await api.get(endpoint, { params });
             return response.data;
@@ -190,6 +211,14 @@ const ExploreCampaignsPage: React.FC = () => {
         );
     };
 
+    const handleCategorySelect = (slug: string) => {
+        if (slug) {
+            setSearchParams({ category: slug });
+        } else {
+            setSearchParams({});
+        }
+    };
+
     return (
         <div style={{ padding: '40px 5%', maxWidth: '1440px', margin: '0 auto', minHeight: '80vh' }}>
             {/* Header section */}
@@ -236,6 +265,36 @@ const ExploreCampaignsPage: React.FC = () => {
                         />
                     </Col>
                 </Row>
+
+                <Divider style={{ margin: '16px 0' }} />
+
+                {/* Horizontal scrolling Categories bar */}
+                <div style={{
+                    display: 'flex',
+                    overflowX: 'auto',
+                    gap: '8px',
+                    paddingBottom: '8px',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none'
+                }} className="categories-filter-scroll">
+                    <Button 
+                        type={categoryFilter === '' ? 'primary' : 'default'}
+                        onClick={() => handleCategorySelect('')}
+                        style={{ borderRadius: 20, fontWeight: 500 }}
+                    >
+                        Semua Kategori
+                    </Button>
+                    {categories?.map((cat) => (
+                        <Button 
+                            key={cat.id}
+                            type={categoryFilter === cat.slug ? 'primary' : 'default'}
+                            onClick={() => handleCategorySelect(cat.slug)}
+                            style={{ borderRadius: 20, fontWeight: 500 }}
+                        >
+                            {cat.name}
+                        </Button>
+                    ))}
+                </div>
             </Card>
 
             {/* Campaigns representation */}
