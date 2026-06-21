@@ -14,14 +14,6 @@ import {
     ShareAltOutlined,
     GiftOutlined,
     CheckCircleFilled,
-    BookOutlined,
-    MedicineBoxOutlined,
-    AlertOutlined,
-    HomeOutlined,
-    HeartOutlined,
-    EnvironmentOutlined,
-    BulbOutlined,
-    DollarOutlined,
     AppstoreOutlined,
     LeftOutlined,
     RightOutlined
@@ -39,41 +31,6 @@ import childrenImg from '../assets/contents/children.jpg';
 import AnimatedNumber from '../components/AnimatedNumber';
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
-
-const getCategoryIcon = (slug: string) => {
-    switch (slug.toLowerCase()) {
-        case 'pendidikan':
-        case 'education':
-            return <BookOutlined />;
-        case 'kesehatan':
-        case 'medical':
-        case 'health':
-            return <MedicineBoxOutlined />;
-        case 'bencana-alam':
-        case 'disaster':
-            return <AlertOutlined />;
-        case 'panti-asuhan':
-        case 'orphanage':
-            return <HomeOutlined />;
-        case 'kemanusiaan':
-        case 'humanity':
-            return <HeartOutlined />;
-        case 'lingkungan':
-        case 'environment':
-            return <EnvironmentOutlined />;
-        case 'sosial':
-        case 'social':
-            return <TeamOutlined />;
-        case 'karya-kreatif':
-        case 'creative':
-            return <BulbOutlined />;
-        case 'zakat':
-        case 'sedekah':
-            return <DollarOutlined />;
-        default:
-            return <AppstoreOutlined />;
-    }
-};
 
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
@@ -357,7 +314,7 @@ const LandingPage: React.FC = () => {
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                                                     />
                                                 ) : (
-                                                    getCategoryIcon(cat.slug)
+                                                    <AppstoreOutlined />
                                                 )}
                                             </div>
                                             <Text strong style={{ 
