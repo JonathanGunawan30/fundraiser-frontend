@@ -18,6 +18,7 @@ import {
     Tabs,
     Timeline,
     Image,
+    Pagination,
     message,
     Modal,
     App
@@ -59,6 +60,19 @@ const CampaignDetailPage: React.FC = () => {
             return response.data.data;
         },
         enabled: !!slug,
+    });
+
+    const [donationPage, setDonationPage] = React.useState(1);
+
+    const { data: donationsResponse, isLoading: donationsLoading } = useQuery({
+        queryKey: ['campaign-donations', campaign?.id, donationPage],
+        queryFn: async () => {
+            const response = await api.get(`/campaigns/${campaign?.id}/donations`, {
+                params: { page: donationPage, per_page: 5 }
+            });
+            return response.data;
+        },
+        enabled: !!campaign?.id,
     });
 
     const handleDonateClick = () => {
@@ -188,12 +202,16 @@ const CampaignDetailPage: React.FC = () => {
         },
         {
             key: 'donations',
-            label: `Donatur (${campaign.donations?.length || 0})`,
+            label: `Donatur (${campaign.donor_count})`,
             children: (
                 <div style={{ paddingTop: 24 }}>
-                    {campaign.donations && campaign.donations.length > 0 ? (
+                    {donationsLoading ? (
+                        <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                            <Spin />
+                        </div>
+                    ) : donationsResponse?.data && donationsResponse.data.length > 0 ? (
                         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                            {campaign.donations.map((donation: Donation) => {
+                            {donationsResponse.data.map((donation: Donation) => {
                                 // ponytail: check is_anonymous to display placeholder name/avatar
                                 const name = donation.is_anonymous ? 'Orang Baik' : (donation.user?.name || 'Anonim');
                                 const avatarUrl = donation.is_anonymous ? undefined : donation.user?.avatar_url;
@@ -264,6 +282,19 @@ const CampaignDetailPage: React.FC = () => {
                                     </div>
                                 );
                             })}
+
+                            {/* Pagination Control */}
+                            {donationsResponse.meta && donationsResponse.meta.total > donationsResponse.meta.per_page && (
+                                <div style={{ textAlign: 'center', marginTop: 24 }}>
+                                    <Pagination
+                                        current={donationPage}
+                                        total={donationsResponse.meta.total}
+                                        pageSize={donationsResponse.meta.per_page}
+                                        onChange={(p) => setDonationPage(p)}
+                                        showSizeChanger={false}
+                                    />
+                                </div>
+                            )}
                         </Space>
                     ) : (
                         <div style={{ textAlign: 'center', padding: '60px 0' }}>
