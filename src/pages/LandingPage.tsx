@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Typography, Row, Col, Card, Button, Progress, Tag, Space, Divider, Spin, Collapse, Avatar } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
@@ -12,11 +13,22 @@ import {
     FileTextOutlined,
     ShareAltOutlined,
     GiftOutlined,
-    CheckCircleFilled
+    CheckCircleFilled,
+    BookOutlined,
+    MedicineBoxOutlined,
+    AlertOutlined,
+    HomeOutlined,
+    HeartOutlined,
+    EnvironmentOutlined,
+    BulbOutlined,
+    DollarOutlined,
+    AppstoreOutlined,
+    LeftOutlined,
+    RightOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 
-import type {Campaign, Faq, SiteSetting} from '../types';
+import type {Campaign, Faq, SiteSetting, CampaignCategory} from '../types';
 import p1 from '../assets/profiles/p1.jpg';
 import p2 from '../assets/profiles/p2.jpg';
 import p3 from '../assets/profiles/p3.jpg';
@@ -28,8 +40,63 @@ import AnimatedNumber from '../components/AnimatedNumber';
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
 
+const getCategoryIcon = (slug: string) => {
+    switch (slug.toLowerCase()) {
+        case 'pendidikan':
+        case 'education':
+            return <BookOutlined />;
+        case 'kesehatan':
+        case 'medical':
+        case 'health':
+            return <MedicineBoxOutlined />;
+        case 'bencana-alam':
+        case 'disaster':
+            return <AlertOutlined />;
+        case 'panti-asuhan':
+        case 'orphanage':
+            return <HomeOutlined />;
+        case 'kemanusiaan':
+        case 'humanity':
+            return <HeartOutlined />;
+        case 'lingkungan':
+        case 'environment':
+            return <EnvironmentOutlined />;
+        case 'sosial':
+        case 'social':
+            return <TeamOutlined />;
+        case 'karya-kreatif':
+        case 'creative':
+            return <BulbOutlined />;
+        case 'zakat':
+        case 'sedekah':
+            return <DollarOutlined />;
+        default:
+            return <AppstoreOutlined />;
+    }
+};
+
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
+    const categoriesScrollRef = useRef<HTMLDivElement>(null);
+
+    const handleScrollCategories = (direction: 'left' | 'right') => {
+        if (categoriesScrollRef.current) {
+            const { scrollLeft } = categoriesScrollRef.current;
+            const scrollAmount = direction === 'left' ? -360 : 360;
+            categoriesScrollRef.current.scrollTo({
+                left: scrollLeft + scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    const { data: categories, isLoading: categoriesLoading } = useQuery<CampaignCategory[]>({
+        queryKey: ['categories'],
+        queryFn: async () => {
+            const response = await api.get('/campaign-categories');
+            return response.data.data;
+        },
+    });
 
     const { data: campaigns, isLoading: campaignsLoading } = useQuery({
         queryKey: ['campaigns-featured'],
@@ -178,6 +245,163 @@ const LandingPage: React.FC = () => {
                             </div>
                         </Col>
                     </Row>
+                </div>
+            </section>
+
+            {/* Categories Section */}
+            <section style={{ 
+                padding: '60px 5% 40px', 
+                background: '#f8fafc',
+                borderBottom: '1px solid #f1f5f9'
+            }}>
+                <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                        <Title level={2} style={{ margin: '0 0 12px', fontSize: '2.2rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                            Jelajahi Kategori Penggalangan Dana
+                        </Title>
+                        <Paragraph type="secondary" style={{ fontSize: '1.05rem', color: '#64748b', maxWidth: '600px', margin: '0 auto' }}>
+                            Pilih dan salurkan kebaikan Anda sesuai dengan bidang atau kebutuhan yang paling Anda pedulikan.
+                        </Paragraph>
+                    </div>
+
+                    {categoriesLoading ? (
+                        <div style={{ textAlign: 'center', padding: '40px' }}><Spin size="large" /></div>
+                    ) : (
+                        <div style={{ position: 'relative', width: '100%', padding: '0 10px' }}>
+                            {/* Left Swiper Control Button */}
+                            <Button 
+                                shape="circle" 
+                                size="large"
+                                icon={<LeftOutlined />} 
+                                onClick={() => handleScrollCategories('left')} 
+                                className="slider-arrow-btn"
+                                style={{ 
+                                    position: 'absolute', 
+                                    left: '-20px', 
+                                    top: '50%', 
+                                    transform: 'translateY(-50%)', 
+                                    zIndex: 10,
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                                    border: '1px solid #e2e8f0',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            />
+
+                            {/* Horizontal Categories Scroll Container */}
+                            <div 
+                                ref={categoriesScrollRef}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    overflowX: 'auto',
+                                    gap: '16px',
+                                    scrollBehavior: 'smooth',
+                                    padding: '10px 0',
+                                    scrollbarWidth: 'none',
+                                    msOverflowStyle: 'none'
+                                }}
+                                className="categories-filter-scroll"
+                            >
+                                {categories?.map((cat) => (
+                                    <div 
+                                        key={cat.id}
+                                        style={{ 
+                                            flex: '0 0 140px',
+                                            width: 140
+                                        }}
+                                    >
+                                        <Card
+                                            bordered
+                                            style={{ 
+                                                borderRadius: 16, 
+                                                textAlign: 'center', 
+                                                cursor: 'pointer',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                                                border: '1px solid #e2e8f0',
+                                                height: '100%',
+                                                padding: '16px 8px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'center',
+                                                alignItems: 'center'
+                                            }}
+                                            bodyStyle={{ 
+                                                padding: 0,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: '100%'
+                                            }}
+                                            onClick={() => navigate(`/campaigns?category=${cat.slug}`)}
+                                        >
+                                            <div style={{ 
+                                                fontSize: '1.8rem', 
+                                                color: '#1677ff', 
+                                                marginBottom: 12,
+                                                background: '#f0f7ff',
+                                                width: 56,
+                                                height: 56,
+                                                borderRadius: '12px',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                overflow: 'hidden'
+                                            }}>
+                                                {cat.icon_url ? (
+                                                    <img 
+                                                        src={cat.icon_url} 
+                                                        alt={cat.name} 
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                                    />
+                                                ) : (
+                                                    getCategoryIcon(cat.slug)
+                                                )}
+                                            </div>
+                                            <Text strong style={{ 
+                                                fontSize: '0.85rem', 
+                                                color: '#1e293b',
+                                                display: 'block',
+                                                lineHeight: 1.3,
+                                                textAlign: 'center',
+                                                height: '2.4rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                wordBreak: 'break-word',
+                                                whiteSpace: 'normal'
+                                            }}>
+                                                {cat.name}
+                                            </Text>
+                                        </Card>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Right Swiper Control Button */}
+                            <Button 
+                                shape="circle" 
+                                size="large"
+                                icon={<RightOutlined />} 
+                                onClick={() => handleScrollCategories('right')} 
+                                className="slider-arrow-btn"
+                                style={{ 
+                                    position: 'absolute', 
+                                    right: '-20px', 
+                                    top: '50%', 
+                                    transform: 'translateY(-50%)', 
+                                    zIndex: 10,
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                                    border: '1px solid #e2e8f0',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            />
+                        </div>
+                    )}
                 </div>
             </section>
 

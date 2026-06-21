@@ -163,3 +163,28 @@ code {
     margin-top: 8px;
   }
 }
+
+/* Category Card Hover Styles */
+.category-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(22, 119, 255, 0.1) !important;
+}
+.category-card:hover .category-icon-wrapper {
+  background: #1677ff !important;
+  color: #ffffff !important;
+  transform: scale(1.05);
+}
+
+/* Hide scrollbar for category filter scroll area */
+.categories-filter-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .slider-arrow-btn {
+    display: none !important;
+  }
+}
