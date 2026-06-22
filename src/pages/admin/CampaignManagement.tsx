@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Button, Space, Typography, Tag, Avatar, Progress, Tooltip, App } from 'antd';
+import { Table, Button, Space, Typography, Tag, Avatar, Progress, Tooltip, App, Radio } from 'antd';
 import { 
     EyeOutlined, 
     DeleteOutlined, 
@@ -19,11 +19,16 @@ const CampaignManagement: React.FC = () => {
     const queryClient = useQueryClient();
     const { notification, modal } = App.useApp();
     const [page, setPage] = useState(1);
+    const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
 
     const { data, isLoading } = useQuery<PaginatedResponse<Campaign>>({
-        queryKey: ['admin-campaigns', page],
+        queryKey: ['admin-campaigns', page, statusFilter],
         queryFn: async () => {
-            const response = await api.get('/admin/campaigns', { params: { page, per_page: 10 } });
+            const params: Record<string, any> = { page, per_page: 10 };
+            if (statusFilter) {
+                params.status = statusFilter;
+            }
+            const response = await api.get('/admin/campaigns', { params });
             return response.data;
         },
     });
@@ -138,10 +143,21 @@ const CampaignManagement: React.FC = () => {
                     <Title level={2} style={{ margin: 0 }}>Campaign Management</Title>
                     <Text type="secondary">Review and manage fundraising campaigns submitted by users.</Text>
                 </div>
-                <Space wrap>
-                    <Button icon={<ClockCircleOutlined />}>Pending Only</Button>
-                    <Button type="primary" icon={<SafetyCertificateOutlined />}>Verification Queue</Button>
-                </Space>
+                <Radio.Group 
+                    value={statusFilter || 'all'} 
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        setStatusFilter(val === 'all' ? undefined : val);
+                        setPage(1);
+                    }}
+                    buttonStyle="solid"
+                >
+                    <Radio.Button value="all">Semua</Radio.Button>
+                    <Radio.Button value="pending">Pending</Radio.Button>
+                    <Radio.Button value="active">Aktif</Radio.Button>
+                    <Radio.Button value="completed">Selesai</Radio.Button>
+                    <Radio.Button value="suspended">Ditangguhkan</Radio.Button>
+                </Radio.Group>
             </div>
 
             <Table
