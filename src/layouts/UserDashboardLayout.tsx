@@ -13,6 +13,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { getImageUrl } from '../lib/utils';
 import NotificationDropdown from '../components/NotificationDropdown';
+import { useAuth } from '../lib/AuthContext';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -23,6 +24,7 @@ const UserDashboardLayout: React.FC = () => {
     const queryClient = useQueryClient();
     const location = useLocation();
     const screens = useBreakpoint();
+    const { logout } = useAuth();
     
     const isMobile = !screens.md;
     // Only show name on large screens (lg and up)
@@ -64,7 +66,7 @@ const UserDashboardLayout: React.FC = () => {
     }, [queryClient]);
 
     const handleLogout = () => {
-        localStorage.clear();
+        logout();
         navigate('/');
     };
 
