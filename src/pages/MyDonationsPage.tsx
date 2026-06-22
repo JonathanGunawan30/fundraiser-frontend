@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Typography, Card, Table, Tag, Space, Button, App, Tooltip, Modal, Descriptions, Divider } from 'antd';
+import { Typography, Card, Table, Tag, Space, Button, Tooltip, Modal, Descriptions, Divider } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -220,7 +220,7 @@ const MyDonationsPage: React.FC = () => {
                         
                         {selectedDonation.message && (
                             <>
-                                <Divider orientation="left" plain>Pesan Kebaikan</Divider>
+                                <Divider orientation={"left" as any} plain>Pesan Kebaikan</Divider>
                                 <Paragraph italic style={{ padding: '0 12px' }}>
                                     "{selectedDonation.message}"
                                 </Paragraph>

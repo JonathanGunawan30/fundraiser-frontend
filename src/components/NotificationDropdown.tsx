@@ -223,7 +223,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isAdmin = f
                                 <Text type="secondary" style={{ fontSize: 11 }}>
                                     {formatRelativeTime(item.created_at)}
                                 </Text>
-                                <Text type="primary" style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <Text style={{ color: '#1677ff', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
                                     <EyeOutlined style={{ fontSize: 10 }} /> Detail
                                 </Text>
                             </Space>

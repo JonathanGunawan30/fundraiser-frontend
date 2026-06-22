@@ -8,7 +8,6 @@ import {
     LineChartOutlined, 
     WalletOutlined,
     PlusOutlined,
-    ArrowRightOutlined,
     EyeOutlined,
     EditOutlined,
     FileImageOutlined
@@ -17,11 +16,11 @@ import api from '../api/axios';
 import type { UserDashboardData, Campaign, Donation, PaginatedResponse, Withdrawal } from '../types';
 import { useAuth } from '../lib/AuthContext';
 import WithdrawalModal from '../components/WithdrawalModal';
+import { Area } from '@ant-design/charts';
 
 const { Title, Text } = Typography;
 
 const UserDashboard: React.FC = () => {
-    const { notification } = App.useApp();
     const navigate = useNavigate();
     const { user: authUser } = useAuth();
     const [campaignPage, setCampaignPage] = useState(1);
@@ -53,6 +52,23 @@ const UserDashboard: React.FC = () => {
             return response.data;
         },
     });
+
+    const chartData = React.useMemo(() => {
+        if (!dashboardData?.charts?.donations_last_30_days) return [];
+        return dashboardData.charts.donations_last_30_days.map((item: any) => ({
+            date: new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+            amount: Number(item.total_amount || 0),
+        }));
+    }, [dashboardData]);
+
+    const chartConfig = {
+        data: chartData,
+        xField: 'date',
+        yField: 'amount',
+        height: 280,
+        autoFit: true,
+        smooth: true,
+    };
 
     // Fetch withdrawals list with high limit for client-side filtering and balance calculation
     const { data: withdrawalsData, isLoading: isWithdrawalsLoading, refetch: refetchWithdrawals } = useQuery<PaginatedResponse<Withdrawal>>({
@@ -366,6 +382,27 @@ const UserDashboard: React.FC = () => {
                     </Card>
                 </Col>
             </Row>
+
+            <Card 
+                title={
+                    <Space>
+                        <LineChartOutlined style={{ color: '#8b5cf6' }} />
+                        <span style={{ fontWeight: 700 }}>Tren Donasi Masuk</span>
+                        {statsPeriod !== 'all' && <Tag color="purple">{statsPeriod === 30 ? '30 Hari' : '7 Hari'}</Tag>}
+                    </Space>
+                }
+                bordered={false} 
+                style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '32px' }}
+                loading={isDashboardLoading}
+            >
+                {chartData.length > 0 ? (
+                    <Area {...chartConfig} />
+                ) : (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 250, flexDirection: 'column', gap: 12 }}>
+                        <Text type="secondary">Tidak ada data donasi untuk periode ini.</Text>
+                    </div>
+                )}
+            </Card>
 
             <Row gutter={[24, 24]}>
                 <Col xs={24} lg={16}>

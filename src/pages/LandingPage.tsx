@@ -320,7 +320,6 @@ const LandingPage: React.FC = () => {
                                             <Text strong style={{ 
                                                 fontSize: '0.85rem', 
                                                 color: '#1e293b',
-                                                display: 'block',
                                                 lineHeight: 1.3,
                                                 textAlign: 'center',
                                                 height: '2.4rem',

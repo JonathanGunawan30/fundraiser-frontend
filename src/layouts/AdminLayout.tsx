@@ -76,7 +76,7 @@ const AdminLayout: React.FC = () => {
         const path = location.pathname;
         const fullPath = location.pathname + location.search;
         let selected = [fullPath];
-        let open = [];
+        let open: string[] = [];
 
         // If reviewing a campaign, keep "All Campaigns" selected or "Verification Queue" depending on how we navigated
         if (path.startsWith('/admin/campaigns/') && path.endsWith('/review')) {
