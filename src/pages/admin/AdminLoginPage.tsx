@@ -37,9 +37,12 @@ const AdminLoginPage: React.FC = () => {
             setStep(1);
             notification.success({
                 message: 'OTP Sent',
-                description: 'Please check your email for the verification code.',
+                description: 'If your email is registered in our system, we have sent the OTP verification code.',
                 placement: 'topRight',
             });
+            // ponytail: Reset turnstile token after successful consumption so resend requires a new challenge
+            turnstileRef.current?.reset();
+            setTurnstileToken(null);
         } catch (error: unknown) {
             const messages = getErrorMessages(error);
             notification.error({
@@ -124,18 +127,7 @@ const AdminLoginPage: React.FC = () => {
                             <Input size="large" placeholder="admin@fundraiser.id" />
                         </Form.Item>
 
-                        <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'center' }}>
-                            <Turnstile
-                                ref={turnstileRef}
-                                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                                options={{ theme: 'light' }}
-                                onSuccess={(token) => setTurnstileToken(token)}
-                                onExpire={() => setTurnstileToken(null)}
-                                onError={() => setTurnstileToken(null)}
-                            />
-                        </div>
-
-                        <Form.Item>
+                        <Form.Item style={{ marginBottom: 0 }}>
                             <Button type="primary" htmlType="submit" block size="large" loading={loading} style={{ height: 48, fontWeight: 600 }}>
                                 Send OTP
                             </Button>
@@ -144,7 +136,10 @@ const AdminLoginPage: React.FC = () => {
                 ) : (
                     <Form layout="vertical" onFinish={handleOtpSubmit}>
                         <div style={{ marginBottom: 16 }}>
-                            <Text>We've sent a 6-digit code to <strong>{email}</strong></Text>
+                            <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+                                Kami telah mengirimkan kode OTP ke email Anda (jika terdaftar di sistem kami). Silakan periksa inbox atau spam.
+                            </Text>
+                            <Text>Tujuan pengiriman: <strong>{email}</strong></Text>
                             <Button type="link" size="small" onClick={() => setStep(0)} style={{ padding: 0, marginLeft: 8 }}>
                                 Change?
                             </Button>
@@ -171,6 +166,18 @@ const AdminLoginPage: React.FC = () => {
                         </div>
                     </Form>
                 )}
+
+                {/* ponytail: Persist Turnstile widget outside step condition so it can be solved for both initial submission and resend */}
+                <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
+                    <Turnstile
+                        ref={turnstileRef}
+                        siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                        options={{ theme: 'light' }}
+                        onSuccess={(token) => setTurnstileToken(token)}
+                        onExpire={() => setTurnstileToken(null)}
+                        onError={() => setTurnstileToken(null)}
+                    />
+                </div>
             </Card>
         </div>
     );
