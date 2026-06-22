@@ -19,6 +19,7 @@ import type { MenuProps } from 'antd';
 import { Layout, Menu, theme, Button, Avatar, Dropdown, Space, Typography, ConfigProvider, Drawer, Grid } from 'antd';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import NotFoundPage from '../pages/NotFoundPage';
+import NotificationDropdown from '../components/NotificationDropdown';
 
 const { Header, Content, Footer, Sider } = Layout;
 const { Text, Title } = Typography;
@@ -251,7 +252,7 @@ const AdminLayout: React.FC = () => {
                             style={{ fontSize: '16px', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         />
                         <Space size={isMobile ? "small" : "large"}>
-                            <Button type="text" icon={<BellOutlined />} style={{ fontSize: '18px', color: '#64748b' }} />
+                            <NotificationDropdown isAdmin={true} />
                             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
                                 <Space style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: 8, transition: 'all 0.3s' }} className="user-dropdown-hover">
                                     <Avatar 
