@@ -12,6 +12,7 @@ import { Outlet, useNavigate, Link, useLocation, Navigate } from 'react-router-d
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { getImageUrl } from '../lib/utils';
+import NotificationDropdown from '../components/NotificationDropdown';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -182,7 +183,8 @@ const UserDashboardLayout: React.FC = () => {
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', flexShrink: 0, gap: '12px' }}>
+                        <NotificationDropdown isAdmin={false} />
                         <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
                             <Space style={{ cursor: 'pointer', background: '#f8fafc', padding: (isMobile || !showName) ? '4px 8px' : '4px 12px', borderRadius: '12px' }}>
                                 <Avatar 

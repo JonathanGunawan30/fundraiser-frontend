@@ -178,3 +178,22 @@ export interface ProcessWithdrawalPayload {
     rejection_reason?: string;
 }
 
+export interface AppNotification {
+    id: string;
+    type: string;
+    notifiable_type: string;
+    notifiable_id: number;
+    data: {
+        type: string;
+        campaign_id?: number;
+        campaign_title?: string;
+        user_name?: string;
+        amount?: number;
+        status?: string;
+        message: string;
+    };
+    read_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
