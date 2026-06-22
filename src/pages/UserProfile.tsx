@@ -3,7 +3,7 @@ import { Typography, Row, Col, Card, Avatar, Button, Form, Input, Divider, App, 
 import { UserOutlined, MailOutlined, PhoneOutlined, CameraOutlined, SaveOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
-import { getErrorMessages } from '../lib/utils';
+import { getErrorMessages, getImageUrl } from '../lib/utils';
 import type { UploadProps } from 'antd';
 
 const { Title, Text } = Typography;
@@ -15,7 +15,6 @@ const UserProfile: React.FC = () => {
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-    // Fetch user details from backend
     const { data: userData, isLoading } = useQuery({
         queryKey: ['user-profile'],
         queryFn: async () => {
@@ -23,6 +22,17 @@ const UserProfile: React.FC = () => {
             return response.data.data;
         },
     });
+
+    // ponytail: Sync form values when user details are asynchronously loaded
+    React.useEffect(() => {
+        if (userData) {
+            form.setFieldsValue({
+                name: userData.name,
+                email: userData.email,
+                phone: userData.phone
+            });
+        }
+    }, [userData, form]);
 
     const updateProfileMutation = useMutation({
         mutationFn: async (values: { name: string; phone?: string }) => {
@@ -49,6 +59,9 @@ const UserProfile: React.FC = () => {
             // Sync local storage
             localStorage.setItem('user_name', updatedUser.name);
             localStorage.setItem('user_avatar', updatedUser.avatar_url || '');
+            
+            // ponytail: dispatch profile update event so other layout components sync avatar immediately
+            window.dispatchEvent(new Event('user-profile-updated'));
             
             setAvatarFile(null);
             setPreviewUrl(null);
@@ -110,7 +123,7 @@ const UserProfile: React.FC = () => {
                         <div style={{ position: 'relative', display: 'inline-block' }}>
                             <Avatar 
                                 size={120} 
-                                src={previewUrl || userData?.avatar_url} 
+                                src={previewUrl || getImageUrl(userData?.avatar_url)} 
                                 icon={<UserOutlined />} 
                                 style={{ border: '4px solid #f1f5f9' }} 
                             />

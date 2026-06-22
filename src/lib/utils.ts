@@ -61,3 +61,25 @@ export const getErrorMessages = (error: unknown): string[] => {
     
     return ['Something went wrong'];
 };
+
+/**
+ * Resolves a given path to a full image URL.
+ * If the path is already a full URL, it returns it as is.
+ * Otherwise, it prepends the backend base URL.
+ */
+export const getImageUrl = (path?: string | null): string | undefined => {
+    if (!path || path === 'null' || path === 'undefined') return undefined;
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+        return path;
+    }
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+    const baseUrl = apiUrl.replace(/\/api$/, '');
+    
+    // If it's a local public disk path (e.g. avatars/xyz.png), prepend /storage
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    if (!cleanPath.startsWith('/storage') && !cleanPath.startsWith('/avatars')) {
+        // Fallback or custom path handling
+    }
+    
+    return `${baseUrl}${cleanPath}`;
+};

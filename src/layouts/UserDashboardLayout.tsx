@@ -9,8 +9,9 @@ import {
 } from '@ant-design/icons';
 import { Layout, Menu, Button, Avatar, Dropdown, Space, Typography, ConfigProvider, Drawer, Grid } from 'antd';
 import { Outlet, useNavigate, Link, useLocation, Navigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
+import { getImageUrl } from '../lib/utils';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -18,6 +19,7 @@ const { useBreakpoint } = Grid;
 
 const UserDashboardLayout: React.FC = () => {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const location = useLocation();
     const screens = useBreakpoint();
     
@@ -41,9 +43,7 @@ const UserDashboardLayout: React.FC = () => {
     const avatarFromApi = userData?.avatar_url;
     const avatarFromStorage = localStorage.getItem('user_avatar');
     const rawAvatar = avatarFromApi || avatarFromStorage;
-    const finalAvatarSrc = (rawAvatar && rawAvatar !== 'null' && rawAvatar !== 'undefined' && rawAvatar !== '') 
-        ? rawAvatar 
-        : undefined;
+    const finalAvatarSrc = getImageUrl(rawAvatar);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -52,6 +52,15 @@ const UserDashboardLayout: React.FC = () => {
             navigate('/auth/login');
         }
     }, [navigate]);
+
+    // ponytail: Listen for profile updates to trigger refetch & storage sync
+    useEffect(() => {
+        const syncProfile = () => {
+            queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+        };
+        window.addEventListener('user-profile-updated', syncProfile);
+        return () => window.removeEventListener('user-profile-updated', syncProfile);
+    }, [queryClient]);
 
     const handleLogout = () => {
         localStorage.clear();
