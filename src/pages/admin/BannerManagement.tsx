@@ -6,6 +6,7 @@ import api from '../../api/axios';
 import type { Banner, PaginatedResponse } from '../../types';
 import dayjs from 'dayjs';
 import { getErrorMessages, validateImage, getBase64 } from '../../lib/utils';
+import { compressImageToWebp } from '../../lib/compressImage';
 import type { GetProp, UploadFile, UploadProps } from 'antd';
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
@@ -163,7 +164,16 @@ const BannerManagement: React.FC = () => {
         setFileList([...newFileList]);
     };
 
-    const onFinish = (values: any) => {
+    const onFinish = async (values: any) => {
+        if (!editingBanner && fileList.length === 0) {
+            notification.error({
+                message: 'Upload Error',
+                description: 'Please upload banner image',
+                placement: 'topRight',
+            });
+            return;
+        }
+
         const formData = new FormData();
         formData.append('title', values.title);
         if (values.link_url) formData.append('link_url', values.link_url);
@@ -173,7 +183,18 @@ const BannerManagement: React.FC = () => {
         if (values.end_at) formData.append('end_at', values.end_at.format('YYYY-MM-DD HH:mm:ss'));
 
         if (fileList.length > 0 && fileList[0].originFileObj) {
-            formData.append('image', fileList[0].originFileObj);
+            // ponytail: compress banner image to webp before upload to match campaign behavior
+            try {
+                const compressedImage = await compressImageToWebp(fileList[0].originFileObj, {
+                    maxWidth: 1600,
+                    maxHeight: 1600,
+                    quality: 0.8,
+                });
+                formData.append('image', compressedImage);
+            } catch (compressError) {
+                console.error('Failed to compress banner image:', compressError);
+                formData.append('image', fileList[0].originFileObj);
+            }
         }
 
         if (editingBanner) {
@@ -291,8 +312,12 @@ const BannerManagement: React.FC = () => {
                     <Form.Item name="title" label="Banner Title" rules={[{ required: true, message: 'Please enter banner title' }]}>
                         <Input placeholder="e.g. Promo Ramadhan" />
                     </Form.Item>
-                    <Form.Item name="link_url" label="Link URL">
-                        <Input placeholder="https://..." />
+                    <Form.Item 
+                        name="link_url" 
+                        label="Link URL"
+                        extra="Gunakan format '/campaigns/slug-anda' untuk halaman internal, atau 'https://domain.com' untuk link eksternal."
+                    >
+                        <Input placeholder="e.g. /campaigns/bantu-anak-desa atau https://domain.com" />
                     </Form.Item>
                     
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -313,7 +338,7 @@ const BannerManagement: React.FC = () => {
                         </Form.Item>
                     </div>
 
-                    <Form.Item label="Banner Image">
+                    <Form.Item label="Banner Image" required={!editingBanner}>
                         <Upload
                             listType="picture-card"
                             maxCount={1}
@@ -321,7 +346,7 @@ const BannerManagement: React.FC = () => {
                             onPreview={handlePreview}
                             onChange={handleChange}
                             beforeUpload={(file) => {
-                                const result = validateImage(file);
+                                const result = validateImage(file, 10); // ponytail: allow up to 10MB before compression
                                 if (!result.valid) {
                                     notification.error({
                                         message: 'Upload Error',

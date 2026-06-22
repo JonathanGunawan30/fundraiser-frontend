@@ -12,7 +12,8 @@ import {
     Segmented, 
     Pagination, 
     Empty,
-    Button
+    Button,
+    Carousel
 } from 'antd';
 import { 
     SearchOutlined, 
@@ -23,7 +24,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
-import type { Campaign, PaginatedResponse, CampaignCategory } from '../types';
+import type { Campaign, PaginatedResponse, CampaignCategory, Banner } from '../types';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -86,6 +87,16 @@ const ExploreCampaignsPage: React.FC = () => {
             return response.data;
         },
     });
+
+    // ponytail: Fetch promotional banners for explore page
+    const { data: bannersResponse } = useQuery<PaginatedResponse<Banner>>({
+        queryKey: ['banners'],
+        queryFn: async () => {
+            const response = await api.get('/banners');
+            return response.data;
+        },
+    });
+    const banners = bannersResponse?.data || [];
 
     const campaigns = campaignResponse?.data || [];
     const totalCampaigns = campaignResponse?.meta?.total || 0;
@@ -221,15 +232,39 @@ const ExploreCampaignsPage: React.FC = () => {
 
     return (
         <div style={{ padding: '40px 5%', maxWidth: '1440px', margin: '0 auto', minHeight: '80vh' }}>
-            {/* Header section */}
-            <div style={{ marginBottom: 40, textAlign: 'center' }}>
-                <Title level={2} style={{ fontWeight: 800, fontSize: '2.2rem', margin: '0 0 8px' }}>
-                    Jelajahi <span style={{ color: '#1677ff' }}>Campaign</span>
-                </Title>
-                <Text type="secondary" style={{ fontSize: '1.05rem' }}>
-                    Temukan dan dukung aksi kebaikan yang dapat merubah dunia di sekitar kita.
-                </Text>
-            </div>
+
+            {/* ponytail: Sliding Banner Carousel */}
+            {banners && banners.length > 0 && (
+                <div style={{ marginBottom: 32, aspectRatio: '2000 / 800', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                    <Carousel autoplay style={{ height: '100%' }}>
+                        {banners.map((banner) => (
+                            <div
+                                key={banner.id}
+                                style={{
+                                    cursor: banner.link_url ? 'pointer' : 'default',
+                                    display: 'block',
+                                    width: '100%',
+                                    height: '100%'
+                                }}
+                                onClick={() => {
+                                    if (!banner.link_url) return;
+                                    if (banner.link_url.startsWith('http://') || banner.link_url.startsWith('https://')) {
+                                        window.open(banner.link_url, '_blank');
+                                    } else {
+                                        navigate(banner.link_url);
+                                    }
+                                }}
+                            >
+                                <img
+                                    src={banner.image_url}
+                                    alt={banner.title}
+                                    style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
+                                />
+                            </div>
+                        ))}
+                    </Carousel>
+                </div>
+            )}
 
             {/* Filter and layout controls */}
             <Card 
