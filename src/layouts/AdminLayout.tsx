@@ -82,13 +82,16 @@ const AdminLayout: React.FC = () => {
         if (path.startsWith('/admin/campaigns/') && path.endsWith('/review')) {
             selected = ['/admin/campaigns'];
             open = ['campaigns-grp'];
-        } else if (path.includes('/admin/categories') || path.includes('/admin/tags') || path === '/admin/campaigns') {
+        } else if (path === '/admin/campaigns') {
             open = ['campaigns-grp'];
             if (location.search.includes('status=pending')) {
                 selected = ['/admin/campaigns?status=pending'];
             } else {
                 selected = ['/admin/campaigns'];
             }
+        } else if (path.includes('/admin/categories') || path.includes('/admin/tags')) {
+            open = ['campaigns-grp'];
+            selected = [path];
         } else if (path.includes('/admin/banners') || path.includes('/admin/faqs') || path.includes('/admin/audit-logs')) {
             open = ['mgmt-grp'];
         }
