@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Typography, Row, Col, Card, Statistic, Table, Tag, Space, Avatar, Button, App, Tooltip, List } from 'antd';
+import { Typography, Row, Col, Card, Statistic, Table, Tag, Space, Avatar, Button, App, Tooltip, List, Select } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -25,6 +25,7 @@ const UserDashboard: React.FC = () => {
     const navigate = useNavigate();
     const { user: authUser } = useAuth();
     const [campaignPage, setCampaignPage] = useState(1);
+    const [statsPeriod, setStatsPeriod] = useState<string | number>('all');
 
     // Withdrawal Modal States
     const [isWithdrawalModalVisible, setIsWithdrawalModalVisible] = useState(false);
@@ -32,9 +33,13 @@ const UserDashboard: React.FC = () => {
     const [withdrawalBalance, setWithdrawalBalance] = useState<number>(0);
 
     const { data: dashboardData, isLoading: isDashboardLoading } = useQuery<UserDashboardData>({
-        queryKey: ['user-dashboard'],
+        queryKey: ['user-dashboard', statsPeriod],
         queryFn: async () => {
-            const response = await api.get('/auth/dashboard');
+            const params: Record<string, any> = {};
+            if (statsPeriod !== 'all') {
+                params.days = statsPeriod;
+            }
+            const response = await api.get('/auth/dashboard', { params });
             return response.data.data;
         },
     });
@@ -273,27 +278,45 @@ const UserDashboard: React.FC = () => {
 
     return (
         <div style={{ padding: '24px', background: '#f8fafc', minHeight: '100vh' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
                     <Title level={2} style={{ margin: 0, fontWeight: 700 }}>Ringkasan Dashboard</Title>
                     <Text type="secondary">Selamat datang kembali! Ini adalah dampak yang Anda berikan.</Text>
                 </div>
-                <Button 
-                    type="primary" 
-                    size="large" 
-                    icon={<PlusOutlined />} 
-                    style={{ borderRadius: '8px', fontWeight: 600 }}
-                    onClick={() => navigate('/campaigns/create')}
-                >
-                    Buat Campaign
-                </Button>
+                <Space size="middle">
+                    <Select 
+                        value={statsPeriod} 
+                        onChange={(val) => setStatsPeriod(val)}
+                        style={{ width: 180 }}
+                        size="large"
+                        options={[
+                            { value: 'all', label: 'Semua Waktu' },
+                            { value: 30, label: '30 Hari Terakhir' },
+                            { value: 7, label: '7 Hari Terakhir' }
+                        ]}
+                    />
+                    <Button 
+                        type="primary" 
+                        size="large" 
+                        icon={<PlusOutlined />} 
+                        style={{ borderRadius: '8px', fontWeight: 600 }}
+                        onClick={() => navigate('/campaigns/create')}
+                    >
+                        Buat Campaign
+                    </Button>
+                </Space>
             </div>
 
             <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
                 <Col xs={24} sm={12} lg={6}>
                     <Card bordered={false} loading={isDashboardLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
                         <Statistic
-                            title={<Text type="secondary">Total Donasi Saya</Text>}
+                            title={
+                                <Space>
+                                    <Text type="secondary">Total Donasi Saya</Text>
+                                    {statsPeriod !== 'all' && <Tag color="blue">{statsPeriod === 30 ? '30 Hari' : '7 Hari'}</Tag>}
+                                </Space>
+                            }
                             value={dashboardData?.overview.total_donations || 0}
                             prefix={<HeartOutlined style={{ color: '#ef4444', marginRight: '8px' }} />}
                             valueStyle={{ fontWeight: 700 }}
@@ -303,7 +326,12 @@ const UserDashboard: React.FC = () => {
                 <Col xs={24} sm={12} lg={6}>
                     <Card bordered={false} loading={isDashboardLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
                         <Statistic
-                            title={<Text type="secondary">Dana Didonasikan</Text>}
+                            title={
+                                <Space>
+                                    <Text type="secondary">Dana Didonasikan</Text>
+                                    {statsPeriod !== 'all' && <Tag color="green">{statsPeriod === 30 ? '30 Hari' : '7 Hari'}</Tag>}
+                                </Space>
+                            }
                             value={dashboardData?.overview.total_donated_amount || 0}
                             formatter={(value) => `Rp ${new Intl.NumberFormat('id-ID').format(Number(value))}`}
                             prefix={<WalletOutlined style={{ color: '#10b981', marginRight: '8px' }} />}
@@ -324,8 +352,13 @@ const UserDashboard: React.FC = () => {
                 <Col xs={24} sm={12} lg={6}>
                     <Card bordered={false} loading={isDashboardLoading} style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
                         <Statistic
-                            title={<Text type="secondary">Dana Terkumpul</Text>}
-                            value={dashboardData?.overview.total_collected_amount || 0}
+                            title={
+                                <Space>
+                                    <Text type="secondary">Dana Terkumpul</Text>
+                                    {statsPeriod !== 'all' && <Tag color="purple">{statsPeriod === 30 ? '30 Hari' : '7 Hari'}</Tag>}
+                                </Space>
+                            }
+                            value={dashboardData?.overview.total_collected_amount ?? dashboardData?.overview.total_raised_amount ?? 0}
                             formatter={(value) => `Rp ${new Intl.NumberFormat('id-ID').format(Number(value))}`}
                             prefix={<LineChartOutlined style={{ color: '#8b5cf6', marginRight: '8px' }} />}
                             valueStyle={{ fontWeight: 700 }}

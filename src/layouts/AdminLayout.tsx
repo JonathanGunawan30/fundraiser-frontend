@@ -45,6 +45,7 @@ const items: MenuItem[] = [
     getItem(<Link to="/admin">Dashboard</Link>, '/admin', <DashboardOutlined />),
     getItem('Campaigns', 'campaigns-grp', <UnorderedListOutlined />, [
         getItem(<Link to="/admin/campaigns">All Campaigns</Link>, '/admin/campaigns'),
+        getItem(<Link to="/admin/campaigns?status=pending">Verification Queue</Link>, '/admin/campaigns?status=pending'),
         getItem(<Link to="/admin/categories">Categories</Link>, '/admin/categories'),
         getItem(<Link to="/admin/tags">Tags</Link>, '/admin/tags'),
     ]),
@@ -73,21 +74,27 @@ const AdminLayout: React.FC = () => {
     // Determine active and open keys for the menu based on current path
     const { selectedKeys, openKeys } = useMemo(() => {
         const path = location.pathname;
-        let selected = [path];
+        const fullPath = location.pathname + location.search;
+        let selected = [fullPath];
         let open = [];
 
-        // If reviewing a campaign, keep "All Campaigns" selected
+        // If reviewing a campaign, keep "All Campaigns" selected or "Verification Queue" depending on how we navigated
         if (path.startsWith('/admin/campaigns/') && path.endsWith('/review')) {
             selected = ['/admin/campaigns'];
             open = ['campaigns-grp'];
         } else if (path.includes('/admin/categories') || path.includes('/admin/tags') || path === '/admin/campaigns') {
             open = ['campaigns-grp'];
+            if (location.search.includes('status=pending')) {
+                selected = ['/admin/campaigns?status=pending'];
+            } else {
+                selected = ['/admin/campaigns'];
+            }
         } else if (path.includes('/admin/banners') || path.includes('/admin/faqs') || path.includes('/admin/audit-logs')) {
             open = ['mgmt-grp'];
         }
 
         return { selectedKeys: selected, openKeys: open };
-    }, [location.pathname]);
+    }, [location.pathname, location.search]);
 
     const syncProfile = () => {
         const name = localStorage.getItem('user_name');

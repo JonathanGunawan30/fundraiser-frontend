@@ -7,7 +7,7 @@ import {
     SafetyCertificateOutlined
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../api/axios';
 import type { Campaign, PaginatedResponse } from '../../types';
 import { getErrorMessages } from '../../lib/utils';
@@ -18,8 +18,9 @@ const CampaignManagement: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { notification, modal } = App.useApp();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const statusFilter = searchParams.get('status') || undefined;
     const [page, setPage] = useState(1);
-    const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
 
     const { data, isLoading } = useQuery<PaginatedResponse<Campaign>>({
         queryKey: ['admin-campaigns', page, statusFilter],
@@ -147,7 +148,12 @@ const CampaignManagement: React.FC = () => {
                     value={statusFilter || 'all'} 
                     onChange={(e) => {
                         const val = e.target.value;
-                        setStatusFilter(val === 'all' ? undefined : val);
+                        if (val === 'all') {
+                            searchParams.delete('status');
+                        } else {
+                            searchParams.set('status', val);
+                        }
+                        setSearchParams(searchParams);
                         setPage(1);
                     }}
                     buttonStyle="solid"

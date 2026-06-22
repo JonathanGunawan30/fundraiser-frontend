@@ -125,6 +125,8 @@ export interface UserDashboardData {
         total_donated_amount: number;
         active_campaigns_count: number;
         total_collected_amount: number;
+        total_raised_amount?: number;
+        total_donors_count?: number;
     };
     charts: {
         donations_last_30_days: {

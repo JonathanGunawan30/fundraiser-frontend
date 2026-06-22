@@ -1,5 +1,6 @@
 import { Row, Col, Card, Statistic, Table, Typography, Tag, List, Avatar, Space, Button } from 'antd';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { 
     UserOutlined, 
@@ -14,6 +15,7 @@ import type {Donation, Campaign} from '../types';
 const { Title, Text } = Typography;
 
 const AdminDashboard: React.FC = () => {
+    const navigate = useNavigate();
     const { data: stats, isLoading } = useQuery({
         queryKey: ['admin-stats'],
         queryFn: async () => {
@@ -133,7 +135,7 @@ const AdminDashboard: React.FC = () => {
                 <Col xs={24} xl={8}>
                     <Card 
                         title="Campaign Baru"
-                        extra={<Button type="link">Kelola</Button>}
+                        extra={<Button type="link" onClick={() => navigate('/admin/campaigns?status=pending')}>Kelola</Button>}
                     >
                         <List
                             loading={isLoading}
@@ -141,7 +143,7 @@ const AdminDashboard: React.FC = () => {
                             dataSource={stats?.recent_activity?.new_campaigns}
                             renderItem={(item: Campaign) => (
                                 <List.Item
-                                    actions={[<Button type="link" size="small">Detail</Button>]}
+                                    actions={[<Button type="link" size="small" onClick={() => navigate(`/admin/campaigns/${item.slug}/review`)}>Detail</Button>]}
                                 >
                                     <List.Item.Meta
                                         avatar={<Avatar src={item.cover_image_url} shape="square" size="large" />}
