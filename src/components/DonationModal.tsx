@@ -93,8 +93,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
                 </Button>,
             ]}
             width={500}
-            centered
-            borderRadius={16}
+            styles={{ body: { borderRadius: 16 } }}
         >
             <Form
                 form={form}

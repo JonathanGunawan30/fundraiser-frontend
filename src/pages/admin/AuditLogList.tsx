@@ -107,7 +107,7 @@ const AuditLogList: React.FC = () => {
                     current: data?.meta.current_page,
                     showSizeChanger: true,
                 }}
-                styles={{ header: { background: '#f8fafc' } }}
+                styles={{ header: { background: '#f8fafc' } as any }}
             />
         </Space>
     );
