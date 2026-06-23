@@ -32,15 +32,24 @@ const ExploreCampaignsPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const categoryFilter = searchParams.get('category') || '';
+    const initialKeyword = searchParams.get('search') || '';
 
     // Layout options: 
     // - 'grid-4': 4 columns on desktop (default), 1 on mobile (default)
     // - 'grid-2': 2 columns on desktop, 2 on mobile
     const [layout, setLayout] = useState<'grid-4' | 'grid-2'>('grid-4');
-    const [searchKeyword, setSearchKeyword] = useState<string>('');
-    const [debouncedKeyword, setDebouncedKeyword] = useState<string>('');
+    const [searchKeyword, setSearchKeyword] = useState<string>(initialKeyword);
+    const [debouncedKeyword, setDebouncedKeyword] = useState<string>(initialKeyword);
     const [page, setPage] = useState<number>(1);
     const perPage = 8;
+
+    // Update keyword if query parameter changes externally
+    useEffect(() => {
+        const keywordFromUrl = searchParams.get('search') || '';
+        if (keywordFromUrl !== searchKeyword) {
+            setSearchKeyword(keywordFromUrl);
+        }
+    }, [searchParams]);
 
     // Fetch categories for the filter bar
     const { data: categories } = useQuery<CampaignCategory[]>({
@@ -56,11 +65,20 @@ const ExploreCampaignsPage: React.FC = () => {
         setPage(1);
     }, [categoryFilter]);
 
-    // Debounce search input
+    // Debounce search input and sync to searchParams
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedKeyword(searchKeyword);
             setPage(1); // Reset page to 1 when search changes
+
+            // Update URL search parameters
+            const nextParams = new URLSearchParams(searchParams);
+            if (searchKeyword) {
+                nextParams.set('search', searchKeyword);
+            } else {
+                nextParams.delete('search');
+            }
+            setSearchParams(nextParams);
         }, 500);
 
         return () => {
@@ -115,28 +133,57 @@ const ExploreCampaignsPage: React.FC = () => {
         return (
             <Col {...gridSpans} key={campaign.id}>
                 <Card
-                    hoverable
                     bordered={false}
+                    className="campaign-card"
                     style={{ 
-                        borderRadius: 16, 
-                        overflow: 'hidden', 
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.05)', 
+                        background: 'transparent',
                         height: '100%',
                         display: 'flex',
                         flexDirection: 'column'
                     }}
                     cover={
-                        <img 
-                            alt={campaign.title} 
-                            src={campaign.cover_image_url} 
-                            style={{ 
-                                height: layout === 'grid-2' ? 220 : 180, 
-                                objectFit: 'cover' 
-                            }} 
-                        />
+                        <div className="campaign-card-img-container" style={{ height: layout === 'grid-2' ? 220 : 180, position: 'relative' }}>
+                            <img 
+                                alt={campaign.title} 
+                                src={campaign.cover_image_url} 
+                                className="campaign-card-img"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            />
+                            {/* Floating Category Badge */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '16px',
+                                left: '16px',
+                                background: 'rgba(15, 23, 42, 0.75)',
+                                backdropFilter: 'blur(8px)',
+                                color: '#ffffff',
+                                padding: '6px 14px',
+                                borderRadius: '30px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                letterSpacing: '0.5px'
+                            }}>
+                                {campaign.category?.name || 'Umum'}
+                            </div>
+                            {/* Floating Days Left Badge */}
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '16px',
+                                right: '16px',
+                                background: 'rgba(255, 255, 255, 0.92)',
+                                backdropFilter: 'blur(4px)',
+                                color: '#0f172a',
+                                padding: '6px 12px',
+                                borderRadius: '30px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700
+                            }}>
+                                {daysLeft} Hari Lagi
+                            </div>
+                        </div>
                     }
                     bodyStyle={{ 
-                        padding: layout === 'grid-2' ? 20 : 16, 
+                        padding: '16px 4px 8px 4px', 
                         flex: 1, 
                         display: 'flex', 
                         flexDirection: 'column', 
@@ -145,35 +192,22 @@ const ExploreCampaignsPage: React.FC = () => {
                     onClick={() => navigate(`/campaigns/${campaign.slug}`)}
                 >
                     <div>
-                        <Tag 
-                            color="blue" 
-                            style={{ 
-                                marginBottom: 12, 
-                                borderRadius: 4, 
-                                border: 'none', 
-                                background: '#f0f7ff', 
-                                color: '#1677ff', 
-                                fontWeight: 600 
-                            }}
-                        >
-                            {campaign.category?.name || 'Kategori'}
-                        </Tag>
                         <Title 
                             level={5} 
                             style={{ 
-                                margin: '0 0 12px', 
-                                // ponytail: dynamic responsive size for layout-2 to prevent truncation on mobile (xs={12})
-                                fontSize: layout === 'grid-2' ? 'clamp(0.85rem, 3.2vw, 1.15rem)' : '0.95rem', 
-                                fontWeight: 700, 
-                                lineHeight: 1.4, 
+                                margin: '0 0 10px', 
+                                fontSize: layout === 'grid-2' ? 'clamp(0.85rem, 3.2vw, 1.15rem)' : '1.05rem', 
+                                fontWeight: 800, 
+                                lineHeight: 1.35, 
                                 minHeight: '2.8rem', 
                                 overflow: 'hidden',
                                 display: '-webkit-box',
                                 WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical'
+                                WebkitBoxOrient: 'vertical',
+                                letterSpacing: '-0.3px'
                             }}
                         >
-                            {campaign.title}
+                            <span className="campaign-card-title">{campaign.title}</span>
                         </Title>
                         <Paragraph 
                             type="secondary" 
@@ -184,7 +218,8 @@ const ExploreCampaignsPage: React.FC = () => {
                                 overflow: 'hidden',
                                 display: '-webkit-box',
                                 WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical'
+                                WebkitBoxOrient: 'vertical',
+                                lineHeight: 1.4
                             }}
                         >
                             {campaign.description}
@@ -192,29 +227,39 @@ const ExploreCampaignsPage: React.FC = () => {
                     </div>
                     
                     <div>
-                        <div style={{ marginBottom: 8 }}>
+                        <div style={{ marginBottom: 12 }}>
                             <Progress 
                                 percent={percent} 
-                                strokeColor="#1677ff" 
+                                strokeColor={{
+                                    '0%': '#1677ff',
+                                    '100%': '#0050b3'
+                                }}
                                 showInfo={false} 
-                                strokeWidth={6} 
+                                strokeWidth={5} 
+                                style={{ margin: 0 }}
                             />
                         </div>
                         
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, alignItems: 'center' }}>
-                            <Text strong style={{ color: '#1677ff', fontSize: '0.95rem' }}>
-                                Rp {new Intl.NumberFormat('id-ID').format(campaign.collected_amount)}
-                            </Text>
-                            <Text strong style={{ fontSize: '0.9rem' }}>{percent}%</Text>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                            <div>
+                                <Text type="secondary" style={{ fontSize: '0.75rem', display: 'block', marginBottom: 2 }}>Terkumpul</Text>
+                                <Text strong style={{ fontSize: '1.15rem', color: '#1677ff' }}>
+                                    Rp {new Intl.NumberFormat('id-ID').format(campaign.collected_amount)}
+                                </Text>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                <Text type="secondary" style={{ fontSize: '0.75rem', display: 'block', marginBottom: 2 }}>Target</Text>
+                                <Text strong style={{ fontSize: '0.9rem', color: '#475569' }}>
+                                    Rp {new Intl.NumberFormat('id-ID').format(campaign.goal_amount)}
+                                </Text>
+                            </div>
                         </div>
                         
-                        <Divider style={{ margin: '12px 0' }} />
-                        
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Text type="secondary" style={{ fontSize: '0.8rem' }}>{campaign.donor_count} Donatur</Text>
-                            <Text type="secondary" style={{ fontSize: '0.8rem' }}>
-                                <ClockCircleOutlined /> {daysLeft} Hari lagi
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
+                            <Text style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
+                                {campaign.donor_count} Donatur bergabung
                             </Text>
+                            <Text strong style={{ fontSize: '0.85rem', color: '#1677ff' }}>{percent}%</Text>
                         </div>
                     </div>
                 </Card>

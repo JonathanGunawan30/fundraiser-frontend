@@ -1,5 +1,5 @@
-import { Layout, Menu, Button, Space, Typography, Row, Col, Drawer, Grid, Dropdown, Avatar } from 'antd';
-import { Outlet, useNavigate, Link } from 'react-router-dom';
+import { Layout, Menu, Button, Space, Typography, Row, Col, Drawer, Grid, Dropdown, Avatar, Input } from 'antd';
+import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { 
     SearchOutlined, 
     FacebookFilled, 
@@ -72,11 +72,20 @@ const MainLayout: React.FC = () => {
 
     const getSetting = (key: string) => settings?.find((s: SiteSetting) => s.key === key)?.value;
 
+    const location = useLocation();
+
+    const getActiveKey = () => {
+        const path = location.pathname;
+        if (path === '/') return 'home';
+        if (path.startsWith('/campaigns')) return 'explore';
+        if (path.startsWith('/about')) return 'about';
+        return 'home';
+    };
+
     const menuItems = [
         { key: 'home', label: <Link to="/" onClick={() => setDrawerOpen(false)}>Beranda</Link> },
         { key: 'explore', label: <Link to="/campaigns" onClick={() => setDrawerOpen(false)}>Jelajahi</Link> },
-        { key: 'how-it-works', label: <Link to="/" onClick={() => setDrawerOpen(false)}>Cara Kerja</Link> },
-        { key: 'about', label: <Link to="/" onClick={() => setDrawerOpen(false)}>Tentang Kami</Link> },
+        { key: 'about', label: <Link to="/about" onClick={() => setDrawerOpen(false)}>Tentang Kami</Link> },
     ];
 
     return (
@@ -103,7 +112,7 @@ const MainLayout: React.FC = () => {
                 {!isMobile && (
                     <Menu
                         mode="horizontal"
-                        defaultSelectedKeys={['home']}
+                        selectedKeys={[getActiveKey()]}
                         style={{ flex: 1, borderBottom: 'none', background: 'transparent', justifyContent: 'center', marginLeft: '2rem' }}
                         items={menuItems.map(item => ({
                             ...item,
@@ -114,7 +123,6 @@ const MainLayout: React.FC = () => {
 
                 {!isMobile && (
                     <Space size="large">
-                        <Button type="text" icon={<SearchOutlined />} style={{ fontSize: '18px', color: '#475569' }} />
                         {isLoggedIn && user ? (
                             <Dropdown menu={userMenu} placement="bottomRight" arrow>
                                 <Space style={{ cursor: 'pointer' }}>
@@ -135,14 +143,13 @@ const MainLayout: React.FC = () => {
                 )}
 
                 {isMobile && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <Button type="text" icon={<SearchOutlined />} style={{ fontSize: '20px', color: '#0f172a' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         {isLoggedIn && user && (
                             <Dropdown menu={userMenu} placement="bottomRight" arrow>
                                 <Avatar src={user.avatar} icon={<UserOutlined />} />
                             </Dropdown>
                         )}
-                        <Button type="text" icon={<MenuOutlined style={{ fontSize: 22 }} />} onClick={() => setDrawerOpen(true)} style={{ color: '#0f172a', paddingRight: 0 }} />
+                        <Button type="text" icon={<MenuOutlined style={{ fontSize: 22 }} />} onClick={() => setDrawerOpen(true)} style={{ color: '#0f172a', paddingRight: 0, paddingLeft: 4 }} />
                     </div>
                 )}
             </Header>
@@ -161,7 +168,7 @@ const MainLayout: React.FC = () => {
             >
                 <Menu
                     mode="inline"
-                    defaultSelectedKeys={['home']}
+                    selectedKeys={[getActiveKey()]}
                     style={{ border: 'none' }}
                     items={menuItems}
                 />
@@ -193,25 +200,24 @@ const MainLayout: React.FC = () => {
                             <Space direction="vertical" size="middle">
                                 <Link to="/" style={{ color: '#64748b' }}>Beranda</Link>
                                 <Link to="/campaigns" style={{ color: '#64748b' }}>Jelajahi</Link>
-                                <Link to="/" style={{ color: '#64748b' }}>Cara Kerja</Link>
                                 <Link to="/" style={{ color: '#64748b' }}>Buat Campaign</Link>
                             </Space>
                         </Col>
                         <Col xs={12} md={4}>
                             <Title level={5} style={{ marginBottom: 24, fontSize: '1rem', fontWeight: 700 }}>Informasi</Title>
                             <Space direction="vertical" size="middle">
-                                <Link to="/" style={{ color: '#64748b' }}>Tentang Kami</Link>
-                                <Link to="/" style={{ color: '#64748b' }}>FAQ</Link>
-                                <Link to="/" style={{ color: '#64748b' }}>Kebijakan Privasi</Link>
-                                <Link to="/" style={{ color: '#64748b' }}>Syarat & Ketentuan</Link>
+                                <Link to="/about" style={{ color: '#64748b' }}>Tentang Kami</Link>
+                                <Link to="/help-center" style={{ color: '#64748b' }}>FAQ</Link>
+                                <Link to="/privacy" style={{ color: '#64748b' }}>Kebijakan Privasi</Link>
+                                <Link to="/terms" style={{ color: '#64748b' }}>Syarat & Ketentuan</Link>
                             </Space>
                         </Col>
                         <Col xs={12} md={4}>
                             <Title level={5} style={{ marginBottom: 24, fontSize: '1rem', fontWeight: 700 }}>Dukungan</Title>
                             <Space direction="vertical" size="middle">
-                                <Link to="/" style={{ color: '#64748b' }}>Pusat Bantuan</Link>
-                                <Link to="/" style={{ color: '#64748b' }}>Syarat & Ketentuan</Link>
-                                <Link to="/" style={{ color: '#64748b' }}>Kebijakan Privasi</Link>
+                                <Link to="/help-center" style={{ color: '#64748b' }}>Pusat Bantuan</Link>
+                                <Link to="/terms" style={{ color: '#64748b' }}>Syarat & Ketentuan</Link>
+                                <Link to="/privacy" style={{ color: '#64748b' }}>Kebijakan Privasi</Link>
                             </Space>
                         </Col>
                         <Col xs={24} md={4}>

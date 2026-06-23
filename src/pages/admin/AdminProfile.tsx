@@ -183,7 +183,7 @@ const AdminProfile: React.FC = () => {
                                 icon={<SaveOutlined />} 
                                 loading={updateProfileMutation.isPending}
                                 size="large"
-                                style={{ background: '#4f46e5' }}
+                                style={{ background: '#1677ff' }}
                                 block={!screens.md}
                             >
                                 Save Changes
@@ -191,7 +191,7 @@ const AdminProfile: React.FC = () => {
                         </Form>
                     </Card>
                 </Col>
-
+ 
                 <Col xs={24} lg={8}>
                     <Card title="Change Password" bordered={false} className="shadow-sm">
                         <Paragraph type="secondary">
@@ -231,7 +231,7 @@ const AdminProfile: React.FC = () => {
                                 htmlType="submit" 
                                 block 
                                 loading={updatePasswordMutation.isPending}
-                                style={{ background: '#4f46e5' }}
+                                style={{ background: '#1677ff' }}
                             >
                                 Update Password
                             </Button>

@@ -17,6 +17,10 @@ import CampaignDetailPage from './pages/CampaignDetailPage';
 import ExploreCampaignsPage from './pages/ExploreCampaignsPage';
 import DonationFinishPage from './pages/DonationFinishPage';
 import AdminDashboard from './pages/AdminDashboard';
+import AboutPage from './pages/AboutPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import HelpCenterPage from './pages/HelpCenterPage';
 import LoginPage from './pages/LoginPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
@@ -34,7 +38,10 @@ import WithdrawalManagement from './pages/admin/WithdrawalManagement';
 import NotFoundPage from './pages/NotFoundPage';
 import MaintenancePage from './pages/MaintenancePage';
 
+import { useLocation } from 'react-router-dom';
+
 const MaintenanceGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const location = useLocation();
     const { data: settings, isLoading } = useQuery({
         queryKey: ['site-settings'],
         queryFn: async () => {
@@ -53,6 +60,11 @@ const MaintenanceGuard: React.FC<{ children: React.ReactNode }> = ({ children })
         );
     }
 
+    // Bypass maintenance checks for admin routes completely
+    if (location.pathname.startsWith('/admin')) {
+        return <>{children}</>;
+    }
+
     if (isMaintenance) {
         return <MaintenancePage />;
     }
@@ -67,15 +79,19 @@ function App() {
         <BrowserRouter>
           <Routes>
           {/* Public Routes */}
-          {/* Public Routes */}
           <Route path="/" element={<MaintenanceGuard><MainLayout /></MaintenanceGuard>}>
             <Route index element={<LandingPage />} />
             <Route path="campaigns" element={<ExploreCampaignsPage />} />
             <Route path="campaigns/:slug" element={<CampaignDetailPage />} />
+            <Route path="about" element={<AboutPage />} />
+            <Route path="terms" element={<TermsPage />} />
+            <Route path="privacy" element={<PrivacyPage />} />
+            <Route path="help-center" element={<HelpCenterPage />} />
             <Route path="donation/finish" element={<DonationFinishPage />} />
-            <Route path="auth/login" element={<LoginPage />} />
             <Route path="auth/callback" element={<AuthCallbackPage />} />
           </Route>
+
+          <Route path="auth/login" element={<MaintenanceGuard><LoginPage /></MaintenanceGuard>} />
 
           {/* User Authenticated Routes */}
           <Route element={<MaintenanceGuard><UserDashboardLayout /></MaintenanceGuard>}>

@@ -168,7 +168,7 @@ const SiteSettings: React.FC = () => {
                                     block 
                                     size="large"
                                     loading={updateMutation.isPending}
-                                    style={{ background: '#4f46e5' }}
+                                    style={{ background: '#1677ff' }}
                                 >
                                     Save All Settings
                                 </Button>

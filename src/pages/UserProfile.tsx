@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Typography, Row, Col, Card, Avatar, Button, Form, Input, Divider, App, Spin, Upload } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, CameraOutlined, SaveOutlined } from '@ant-design/icons';
+import { Typography, Row, Col, Card, Avatar, Button, Form, Input, Divider, App, Spin, Upload, Tag } from 'antd';
+import { UserOutlined, MailOutlined, PhoneOutlined, CameraOutlined, SaveOutlined, CheckCircleFilled } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { getErrorMessages, getImageUrl } from '../lib/utils';
 import type { UploadProps } from 'antd';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const UserProfile: React.FC = () => {
     const { notification } = App.useApp();
@@ -23,7 +23,6 @@ const UserProfile: React.FC = () => {
         },
     });
 
-    // ponytail: Sync form values when user details are asynchronously loaded
     React.useEffect(() => {
         if (userData) {
             form.setFieldsValue({
@@ -37,7 +36,7 @@ const UserProfile: React.FC = () => {
     const updateProfileMutation = useMutation({
         mutationFn: async (values: { name: string; phone?: string }) => {
             const formData = new FormData();
-            formData.append('_method', 'PATCH'); // Laravel handles PATCH with FormData via _method
+            formData.append('_method', 'PATCH');
             formData.append('name', values.name);
             if (values.phone) formData.append('phone', values.phone);
             if (avatarFile) formData.append('avatar', avatarFile);
@@ -56,17 +55,14 @@ const UserProfile: React.FC = () => {
                 placement: 'topRight',
             });
             
-            // Sync local storage
             localStorage.setItem('user_name', updatedUser.name);
             localStorage.setItem('user_avatar', updatedUser.avatar_url || '');
             
-            // ponytail: dispatch profile update event so other layout components sync avatar immediately
             window.dispatchEvent(new Event('user-profile-updated'));
             
             setAvatarFile(null);
             setPreviewUrl(null);
             
-            // Refresh data
             queryClient.invalidateQueries({ queryKey: ['user-profile'] });
         },
         onError: (error) => {
@@ -100,7 +96,7 @@ const UserProfile: React.FC = () => {
             const reader = new FileReader();
             reader.onload = (e) => setPreviewUrl(e.target?.result as string);
             reader.readAsDataURL(file);
-            return false; // Prevent auto upload
+            return false;
         },
         showUploadList: false,
     };
@@ -114,38 +110,104 @@ const UserProfile: React.FC = () => {
     }
 
     return (
-        <div style={{ maxWidth: 800, margin: '0 auto' }}>
-            <Title level={2} style={{ fontWeight: 700, marginBottom: 32 }}>Pengaturan Profil</Title>
+        <div style={{ padding: '40px 5%', maxWidth: '1100px', margin: '0 auto' }}>
             
-            <Row gutter={[24, 24]}>
-                <Col xs={24} md={8}>
-                    <Card style={{ textAlign: 'center', borderRadius: 16 }}>
-                        <div style={{ position: 'relative', display: 'inline-block' }}>
+            {/* Header */}
+            <div style={{ marginBottom: '40px' }}>
+                <Title level={2} style={{ fontWeight: 900, color: '#0f172a', margin: '0 0 8px 0', fontSize: '2.2rem', letterSpacing: '-1px' }}>
+                    Pengaturan Profil
+                </Title>
+                <Paragraph style={{ color: '#64748b', fontSize: '1.05rem', margin: 0 }}>
+                    Kelola informasi data diri, email, nomor telepon, dan foto profil Anda.
+                </Paragraph>
+            </div>
+            
+            <Row gutter={[32, 32]}>
+                
+                {/* Left Column - User Avatar Card */}
+                <Col xs={24} lg={8}>
+                    <Card 
+                        bordered={false}
+                        style={{ 
+                            textAlign: 'center', 
+                            borderRadius: '24px',
+                            boxShadow: '0 10px 30px rgba(15, 23, 42, 0.03)',
+                            background: '#ffffff',
+                            border: '1px solid #f1f5f9'
+                        }}
+                        bodyStyle={{ padding: '48px 32px' }}
+                    >
+                        <div style={{ position: 'relative', display: 'inline-block', marginBottom: '24px' }}>
                             <Avatar 
-                                size={120} 
+                                size={140} 
                                 src={previewUrl || getImageUrl(userData?.avatar_url)} 
                                 icon={<UserOutlined />} 
-                                style={{ border: '4px solid #f1f5f9' }} 
+                                style={{ 
+                                    border: '6px solid #f8fafc',
+                                    boxShadow: '0 10px 20px rgba(15, 23, 42, 0.08)'
+                                }} 
                             />
                             <Upload {...uploadProps}>
                                 <Button 
                                     type="primary" 
                                     shape="circle" 
-                                    icon={<CameraOutlined />} 
-                                    size="small"
-                                    style={{ position: 'absolute', bottom: 5, right: 5 }}
+                                    icon={<CameraOutlined style={{ fontSize: '16px' }} />} 
+                                    size="large"
+                                    style={{ 
+                                        position: 'absolute', 
+                                        bottom: 5, 
+                                        right: 5,
+                                        background: '#1677ff',
+                                        boxShadow: '0 4px 12px rgba(22, 119, 255, 0.35)',
+                                        border: 'none',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
                                 />
                             </Upload>
                         </div>
-                        <Title level={4} style={{ marginTop: 16, marginBottom: 0 }}>{userData?.name}</Title>
-                        <Text type="secondary">Donatur & Relawan</Text>
-                        <Divider />
-                        <Text style={{ fontSize: 12, color: '#94a3b8' }}>Status Akun: <Text strong style={{ color: '#10b981' }}>{userData?.status?.toUpperCase()}</Text></Text>
+                        
+                        <Title level={4} style={{ fontWeight: 800, color: '#0f172a', margin: '0 0 4px 0', fontSize: '1.25rem' }}>
+                            {userData?.name}
+                        </Title>
+                        <Text type="secondary" style={{ fontSize: '0.9rem', fontWeight: 500, color: '#64748b', display: 'block', marginBottom: '24px' }}>
+                            Donatur & Relawan
+                        </Text>
+                        
+                        <Divider style={{ margin: '24px 0', borderColor: '#f1f5f9' }} />
+                        
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Text style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Status Akun</Text>
+                            <Tag 
+                                icon={<CheckCircleFilled />} 
+                                color="success" 
+                                style={{ 
+                                    borderRadius: '20px', 
+                                    padding: '4px 14px', 
+                                    fontWeight: 700,
+                                    fontSize: '0.8rem',
+                                    textTransform: 'uppercase'
+                                }}
+                            >
+                                {userData?.status || 'AKTIF'}
+                            </Tag>
+                        </div>
                     </Card>
                 </Col>
 
-                <Col xs={24} md={16}>
-                    <Card style={{ borderRadius: 16 }}>
+                {/* Right Column - User Profile Form */}
+                <Col xs={24} lg={16}>
+                    <Card 
+                        bordered={false}
+                        style={{ 
+                            borderRadius: '24px',
+                            boxShadow: '0 10px 30px rgba(15, 23, 42, 0.03)',
+                            background: '#ffffff',
+                            border: '1px solid #f1f5f9'
+                        }}
+                        bodyStyle={{ padding: '40px' }}
+                    >
                         <Form
                             form={form}
                             layout="vertical"
@@ -157,30 +219,45 @@ const UserProfile: React.FC = () => {
                             onFinish={onFinish}
                         >
                             <Form.Item
-                                label="Nama Lengkap"
+                                label={<span style={{ fontWeight: 700, color: '#475569' }}>Nama Lengkap</span>}
                                 name="name"
                                 rules={[{ required: true, message: 'Harap masukkan nama lengkap Anda' }]}
+                                style={{ marginBottom: '24px' }}
                             >
-                                <Input prefix={<UserOutlined style={{ color: '#94a3b8' }} />} size="large" />
+                                <Input 
+                                    prefix={<UserOutlined style={{ color: '#94a3b8', marginRight: '8px' }} />} 
+                                    size="large" 
+                                    style={{ borderRadius: '10px', padding: '10px 16px', background: '#f8fafc' }}
+                                />
                             </Form.Item>
 
                             <Form.Item
-                                label="Email"
+                                label={<span style={{ fontWeight: 700, color: '#475569' }}>Alamat Email (Tidak dapat diubah)</span>}
                                 name="email"
+                                style={{ marginBottom: '24px' }}
                             >
-                                <Input prefix={<MailOutlined style={{ color: '#94a3b8' }} />} size="large" disabled />
+                                <Input 
+                                    prefix={<MailOutlined style={{ color: '#94a3b8', marginRight: '8px' }} />} 
+                                    size="large" 
+                                    disabled 
+                                    style={{ borderRadius: '10px', padding: '10px 16px', background: '#f1f5f9', cursor: 'not-allowed', color: '#64748b' }}
+                                />
                             </Form.Item>
 
                             <Form.Item
-                                label="Nomor Telepon"
+                                label={<span style={{ fontWeight: 700, color: '#475569' }}>Nomor Telepon</span>}
                                 name="phone"
+                                style={{ marginBottom: '40px' }}
                             >
-                                <Input prefix={<PhoneOutlined style={{ color: '#94a3b8' }} />} size="large" placeholder="+62 ..." />
+                                <Input 
+                                    prefix={<PhoneOutlined style={{ color: '#94a3b8', marginRight: '8px' }} />} 
+                                    size="large" 
+                                    placeholder="+62 ..." 
+                                    style={{ borderRadius: '10px', padding: '10px 16px', background: '#f8fafc' }}
+                                />
                             </Form.Item>
 
-                            <Divider />
-
-                            <Form.Item>
+                            <Form.Item style={{ marginBottom: 0 }}>
                                 <Button 
                                     type="primary" 
                                     htmlType="submit" 
@@ -188,7 +265,15 @@ const UserProfile: React.FC = () => {
                                     icon={<SaveOutlined />} 
                                     block 
                                     loading={updateProfileMutation.isPending}
-                                    style={{ height: 48, fontWeight: 600 }}
+                                    style={{ 
+                                        height: 52, 
+                                        fontWeight: 700, 
+                                        borderRadius: '12px',
+                                        background: '#1677ff',
+                                        boxShadow: '0 8px 20px -6px rgba(22, 119, 255, 0.4)',
+                                        border: 'none',
+                                        fontSize: '1rem'
+                                    }}
                                 >
                                     Simpan Perubahan
                                 </Button>

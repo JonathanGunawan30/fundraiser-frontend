@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Typography, Row, Col, Card, Button, Progress, Tag, Space, Divider, Spin, Collapse, Avatar } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
@@ -16,7 +16,8 @@ import {
     CheckCircleFilled,
     AppstoreOutlined,
     LeftOutlined,
-    RightOutlined
+    RightOutlined,
+    MailOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -34,6 +35,7 @@ const { Panel } = Collapse;
 
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
+    const [showAllCategories, setShowAllCategories] = useState(false);
     const categoriesScrollRef = useRef<HTMLDivElement>(null);
 
     const handleScrollCategories = (direction: 'left' | 'right') => {
@@ -85,42 +87,80 @@ const LandingPage: React.FC = () => {
         <div style={{ background: '#fff' }}>
             {/* Hero Section */}
             <section style={{ 
-                padding: '80px 5%', 
-                background: '#fff',
+                padding: '100px 5% 120px', 
+                background: '#ffffff',
                 position: 'relative',
                 overflow: 'hidden'
             }}>
-                <div style={{ width: '100%', maxWidth: '1440px', margin: '0 auto' }}>
-                    <Row gutter={[64, 48]} align="stretch">
+                {/* Decorative background glows */}
+                <div style={{
+                    position: 'absolute',
+                    top: '20%',
+                    right: '-10%',
+                    width: '500px',
+                    height: '500px',
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.04) 0%, rgba(255, 255, 255, 0) 70%)',
+                    filter: 'blur(60px)',
+                    pointerEvents: 'none',
+                    zIndex: 0
+                }} />
+                
+                <div style={{ width: '100%', maxWidth: '1440px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+                    <Row gutter={[64, 48]} align="middle">
+                        {/* Left Content Column */}
                         <Col xs={24} lg={11} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                            <Space direction="vertical" size={32}>
-                                <Tag color="blue" style={{ borderRadius: 20, padding: '6px 16px', fontWeight: 600, border: 'none', background: '#f0f7ff', color: '#1677ff', fontSize: '0.85rem' }}>
-                                    <HeartFilled style={{ marginRight: 8 }} /> Bersama, kita bisa membuat perubahan
-                                </Tag>
+                            <Space direction="vertical" size={32} style={{ display: 'flex' }}>
+                                <div style={{ display: 'inline-flex' }}>
+                                    <Tag color="blue" style={{ 
+                                        borderRadius: '30px', 
+                                        padding: '6px 20px', 
+                                        fontWeight: 700, 
+                                        border: '1px solid rgba(22, 119, 255, 0.12)', 
+                                        background: 'rgba(22, 119, 255, 0.04)', 
+                                        color: '#1677ff', 
+                                        fontSize: '0.85rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}>
+                                        <HeartFilled style={{ color: '#ff4d4f' }} /> Bersama, kita bisa membuat perubahan
+                                    </Tag>
+                                </div>
+
                                 <Title level={1} style={{ 
-                                    fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', 
-                                    fontWeight: 700,
+                                    fontSize: 'clamp(2.4rem, 5vw, 4.2rem)', 
+                                    fontWeight: 900,
                                     color: '#0f172a',
                                     lineHeight: 1.1,
-                                    letterSpacing: '-1.8px',
+                                    letterSpacing: '-2.5px',
                                     marginBottom: 0
                                 }}>
-                                    Dukung ide. Bantu wujudkan <span style={{ color: '#1677ff' }}>perubahan.</span>
+                                    Dukung ide.<br />Bantu wujudkan <span style={{ 
+                                        background: 'linear-gradient(135deg, #1677ff 0%, #0958d9 100%)', 
+                                        WebkitBackgroundClip: 'text', 
+                                        WebkitTextFillColor: 'transparent',
+                                        display: 'inline-block'
+                                    }}>perubahan.</span>
                                 </Title>
-                                <Paragraph style={{ fontSize: '1.15rem', color: '#64748b', maxWidth: 500, marginBottom: 0, lineHeight: 1.6 }}>
-                                    Fundraiser adalah platform crowdfunding untuk membantu mewujudkan berbagai ide, proyek, dan kebutuhan melalui kekuatan bersama.
+
+                                <Paragraph style={{ fontSize: '1.2rem', color: '#475569', maxWidth: 520, marginBottom: 0, lineHeight: 1.65 }}>
+                                    Fundraiser adalah platform crowdfunding modern yang menyatukan orang-orang baik untuk mewujudkan mimpi, menolong sesama, dan berkolaborasi dalam aksi sosial nyata.
                                 </Paragraph>
+
                                 <Space size="middle" wrap>
                                     <Button 
                                         type="primary" 
                                         size="large" 
                                         style={{ 
-                                            height: '54px', 
-                                            padding: '0 32px', 
-                                            fontSize: '1rem', 
+                                            height: '56px', 
+                                            padding: '0 36px', 
+                                            fontSize: '1.05rem', 
                                             background: '#1677ff', 
-                                            borderRadius: '8px',
-                                            fontWeight: 600,
+                                            borderRadius: '30px',
+                                            fontWeight: 700,
+                                            boxShadow: '0 10px 24px -8px rgba(22, 119, 255, 0.4)',
+                                            border: 'none'
                                         }}
                                         onClick={() => navigate('/campaigns')}
                                     >
@@ -128,19 +168,27 @@ const LandingPage: React.FC = () => {
                                     </Button>
                                     <Button 
                                         size="large" 
-                                        variant="outlined"
-                                        icon={<PlayCircleOutlined />}
-                                        style={{ height: '54px', padding: '0 32px', fontSize: '1rem', fontWeight: 600, borderRadius: '8px' }}
+                                        icon={<PlayCircleOutlined style={{ color: '#1677ff' }} />}
+                                        style={{ 
+                                            height: '56px', 
+                                            padding: '0 32px', 
+                                            fontSize: '1.05rem', 
+                                            fontWeight: 700, 
+                                            borderRadius: '30px',
+                                            border: '1px solid #cbd5e1',
+                                            background: 'transparent'
+                                        }}
+                                        onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
                                     >
                                         Cara Kerja
                                     </Button>
                                 </Space>
-                                <Space size="middle" align="center">
+
+                                <Space size="middle" align="center" style={{ marginTop: '12px' }}>
                                     <Avatar.Group
                                         maxCount={4}
                                         size={44}
                                         maxStyle={{ backgroundColor: '#1677ff', color: '#fff', border: '3px solid #fff' }}
-                                        style={{ marginTop: 4 }}
                                     >
                                         <Avatar src={p1} style={{ border: '3px solid #fff' }} />
                                         <Avatar src={p2} style={{ border: '3px solid #fff' }} />
@@ -148,14 +196,16 @@ const LandingPage: React.FC = () => {
                                         <Avatar src={p4} style={{ border: '3px solid #fff' }} />
                                     </Avatar.Group>
                                     <div style={{ marginLeft: 8 }}>
-                                        <Text style={{ display: 'block', fontSize: '0.9rem', color: '#64748b' }}>
+                                        <Text style={{ display: 'block', fontSize: '0.95rem', color: '#475569' }}>
                                             Bergabung dengan <Text strong style={{ color: '#0f172a' }}>10.000+ orang baik</Text>
                                         </Text>
-                                        <Text style={{ fontSize: '0.9rem', color: '#64748b' }}>& mulai berdampak hari ini.</Text>
+                                        <Text style={{ fontSize: '0.9rem', color: '#64748b' }}>& mulai berdampak positif hari ini.</Text>
                                     </div>
                                 </Space>
                             </Space>
                         </Col>
+
+                        {/* Right Decorative Column */}
                         <Col xs={24} lg={13} style={{ display: 'flex' }}>
                             <div style={{ position: 'relative', width: '100%', flex: 1, display: 'flex' }}>
                                 <img 
@@ -207,106 +257,142 @@ const LandingPage: React.FC = () => {
 
             {/* Categories Section */}
             <section style={{ 
-                padding: '60px 5% 40px', 
+                padding: '100px 5% 80px', 
                 background: '#f8fafc',
-                borderBottom: '1px solid #f1f5f9'
+                position: 'relative',
+                overflow: 'hidden'
             }}>
-                <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                        <Title level={2} style={{ margin: '0 0 12px', fontSize: '2.2rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>
-                            Jelajahi Kategori Penggalangan Dana
-                        </Title>
-                        <Paragraph type="secondary" style={{ fontSize: '1.05rem', color: '#64748b', maxWidth: '600px', margin: '0 auto' }}>
-                            Pilih dan salurkan kebaikan Anda sesuai dengan bidang atau kebutuhan yang paling Anda pedulikan.
-                        </Paragraph>
-                    </div>
+                {/* Ambient background glow decoration */}
+                <div style={{
+                    position: 'absolute',
+                    top: '-10%',
+                    right: '5%',
+                    width: '300px',
+                    height: '300px',
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(22, 119, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%)',
+                    filter: 'blur(40px)',
+                    pointerEvents: 'none',
+                    zIndex: 0
+                }} />
 
-                    {categoriesLoading ? (
-                        <div style={{ textAlign: 'center', padding: '40px' }}><Spin size="large" /></div>
-                    ) : (
-                        <div style={{ position: 'relative', width: '100%', padding: '0 10px' }}>
-                            {/* Left Swiper Control Button */}
-                            <Button 
-                                shape="circle" 
-                                size="large"
-                                icon={<LeftOutlined />} 
-                                onClick={() => handleScrollCategories('left')} 
-                                className="slider-arrow-btn"
-                                style={{ 
-                                    position: 'absolute', 
-                                    left: '-20px', 
-                                    top: '50%', 
-                                    transform: 'translateY(-50%)', 
-                                    zIndex: 10,
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                                    border: '1px solid #e2e8f0',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}
-                            />
+                <div style={{ maxWidth: '1440px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+                    <Row gutter={[48, 32]} align="middle">
+                        {/* Left Column: Context & Heading */}
+                        <Col xs={24} lg={8}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                    <Tag color="blue" style={{ 
+                                        borderRadius: '30px', 
+                                        padding: '4px 16px', 
+                                        fontSize: '0.85rem', 
+                                        fontWeight: 600,
+                                        border: '1px solid rgba(22, 119, 255, 0.15)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}>
+                                        <span style={{ 
+                                            width: '6px', 
+                                            height: '6px', 
+                                            borderRadius: '50%', 
+                                            backgroundColor: '#1677ff',
+                                            display: 'inline-block'
+                                        }} />
+                                        Kategori Pilihan
+                                    </Tag>
+                                </div>
+                                
+                                <Title level={2} style={{ 
+                                    margin: 0, 
+                                    fontSize: '2.5rem', 
+                                    fontWeight: 900, 
+                                    color: '#0f172a', 
+                                    letterSpacing: '-1.5px',
+                                    lineHeight: 1.15
+                                }}>
+                                    Salurkan Kebaikan Sesuai Minat Anda
+                                </Title>
+                                
+                                <Paragraph type="secondary" style={{ 
+                                    fontSize: '1.05rem', 
+                                    color: '#64748b', 
+                                    lineHeight: 1.6,
+                                    margin: '8px 0 16px 0'
+                                }}>
+                                    Setiap kontribusi Anda menghidupkan harapan baru. Pilih kategori penggalangan dana yang paling sesuai dengan kepedulian Anda untuk mulai berbagi hari ini.
+                                </Paragraph>
 
-                            {/* Horizontal Categories Scroll Container */}
-                            <div 
-                                ref={categoriesScrollRef}
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    overflowX: 'auto',
+                                {/* Decorative Stats Badge */}
+                                <Card style={{
+                                    borderRadius: '16px',
+                                    background: 'rgba(255, 255, 255, 0.5)',
+                                    border: '1px solid rgba(241, 245, 249, 0.8)',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.01)'
+                                }} bodyStyle={{ padding: '16px 20px' }}>
+                                    <Space size="large">
+                                        <div>
+                                            <Title level={4} style={{ margin: 0, color: '#1677ff', fontWeight: 800, fontSize: '1.5rem' }}>{categories?.length || 0}</Title>
+                                            <Text type="secondary" style={{ fontSize: '0.85rem' }}>Kategori Aktif</Text>
+                                        </div>
+                                        <Divider type="vertical" style={{ height: '30px', borderColor: '#cbd5e1' }} />
+                                        <div>
+                                            <Title level={4} style={{ margin: 0, color: '#10b981', fontWeight: 800, fontSize: '1.5rem' }}>15k+</Title>
+                                            <Text type="secondary" style={{ fontSize: '0.85rem' }}>Donatur Terdaftar</Text>
+                                        </div>
+                                    </Space>
+                                </Card>
+                            </div>
+                        </Col>
+
+                        {/* Right Column: Grid Categories */}
+                        <Col xs={24} lg={16}>
+                            {categoriesLoading ? (
+                                <div style={{ textAlign: 'center', padding: '60px' }}><Spin size="large" /></div>
+                            ) : (
+                                <div style={{ 
+                                    display: 'grid', 
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', 
                                     gap: '16px',
-                                    scrollBehavior: 'smooth',
-                                    padding: '10px 0',
-                                    scrollbarWidth: 'none',
-                                    msOverflowStyle: 'none'
-                                }}
-                                className="categories-filter-scroll"
-                            >
-                                {categories?.map((cat) => (
-                                    <div 
-                                        key={cat.id}
-                                        style={{ 
-                                            flex: '0 0 140px',
-                                            width: 140
-                                        }}
-                                    >
+                                    width: '100%'
+                                }}>
+                                    {(showAllCategories ? categories : categories?.slice(0, 8))?.map((cat) => (
                                         <Card
-                                            bordered
+                                            key={cat.id}
+                                            bordered={false}
+                                            className="category-card"
                                             style={{ 
-                                                borderRadius: 16, 
-                                                textAlign: 'center', 
+                                                borderRadius: '24px', 
                                                 cursor: 'pointer',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-                                                border: '1px solid #e2e8f0',
                                                 height: '100%',
-                                                padding: '16px 8px',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
+                                                textAlign: 'center'
                                             }}
                                             bodyStyle={{ 
-                                                padding: 0,
+                                                padding: '28px 16px',
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                width: '100%'
+                                                height: '100%'
                                             }}
                                             onClick={() => navigate(`/campaigns?category=${cat.slug}`)}
                                         >
-                                            <div style={{ 
-                                                fontSize: '1.8rem', 
-                                                color: '#1677ff', 
-                                                marginBottom: 12,
-                                                background: '#f0f7ff',
-                                                width: 56,
-                                                height: 56,
-                                                borderRadius: '12px',
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                overflow: 'hidden'
-                                            }}>
+                                            <div 
+                                                className="category-icon-wrapper"
+                                                style={{ 
+                                                    fontSize: '1.8rem', 
+                                                    color: '#1677ff', 
+                                                    marginBottom: 16,
+                                                    background: '#f0f7ff',
+                                                    width: 60,
+                                                    height: 60,
+                                                    borderRadius: '18px',
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    overflow: 'hidden'
+                                                }}
+                                            >
                                                 {cat.icon_url ? (
                                                     <img 
                                                         src={cat.icon_url} 
@@ -317,105 +403,161 @@ const LandingPage: React.FC = () => {
                                                     <AppstoreOutlined />
                                                 )}
                                             </div>
-                                            <Text strong style={{ 
-                                                fontSize: '0.85rem', 
+                                            <Text strong className="category-card-text" style={{ 
+                                                fontSize: '0.9rem', 
                                                 color: '#1e293b',
-                                                lineHeight: 1.3,
+                                                lineHeight: 1.35,
                                                 textAlign: 'center',
-                                                height: '2.4rem',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 wordBreak: 'break-word',
-                                                whiteSpace: 'normal'
+                                                whiteSpace: 'normal',
+                                                transition: 'color 0.3s ease'
                                             }}>
                                                 {cat.name}
                                             </Text>
                                         </Card>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Right Swiper Control Button */}
-                            <Button 
-                                shape="circle" 
-                                size="large"
-                                icon={<RightOutlined />} 
-                                onClick={() => handleScrollCategories('right')} 
-                                className="slider-arrow-btn"
-                                style={{ 
-                                    position: 'absolute', 
-                                    right: '-20px', 
-                                    top: '50%', 
-                                    transform: 'translateY(-50%)', 
-                                    zIndex: 10,
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                                    border: '1px solid #e2e8f0',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}
-                            />
-                        </div>
-                    )}
+                                    ))}
+                                    {categories && categories.length > 8 && (
+                                        <div style={{ gridColumn: '1 / -1', textAlign: 'center', marginTop: '12px' }}>
+                                            <Button 
+                                                type="link" 
+                                                onClick={() => setShowAllCategories(!showAllCategories)}
+                                                style={{ fontWeight: 600, color: '#1677ff' }}
+                                            >
+                                                {showAllCategories ? 'Tampilkan Lebih Sedikit' : `Lihat Semua Kategori (${categories.length})`}
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </Col>
+                    </Row>
                 </div>
             </section>
 
             {/* Featured Campaigns Section */}
-            <section style={{ padding: '80px 5%', background: '#fff' }}>
+            <section style={{ padding: '100px 5%', background: '#ffffff' }}>
                 <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
-                        <Title level={2} style={{ margin: 0, fontSize: '2rem', fontWeight: 800 }}>Campaign Populer</Title>
-                        <Link to="/campaigns" style={{ color: '#1677ff', fontWeight: 600 }}>Lihat semua <ArrowRightOutlined style={{ fontSize: 12 }} /></Link>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '48px' }}>
+                        <div>
+                            <Tag color="blue" style={{ marginBottom: 12, borderRadius: '20px', padding: '2px 12px', fontWeight: 600 }}>CAMPAIGN PILIHAN</Tag>
+                            <Title level={2} style={{ margin: 0, fontSize: '2.4rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-1px' }}>Campaign Populer</Title>
+                        </div>
+                        <Link to="/campaigns" style={{ color: '#1677ff', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1rem' }}>
+                            Lihat semua <ArrowRightOutlined style={{ fontSize: 14 }} />
+                        </Link>
                     </div>
                     
                     <Row gutter={[24, 32]}>
                         {campaignsLoading ? (
                             [1,2,3,4].map(i => (
                                 <Col xs={24} sm={12} lg={6} key={i}>
-                                    <Card loading bordered={false} style={{ borderRadius: 16 }} />
+                                    <Card loading bordered={false} style={{ borderRadius: 24 }} />
                                 </Col>
                             ))
                         ) : campaigns?.map((campaign: Campaign) => {
                             const daysLeft = Math.max(0, Math.ceil((new Date(campaign.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
+                            const percent = Math.round((campaign.collected_amount / campaign.goal_amount) * 100);
                             return (
                                 <Col xs={24} sm={12} lg={6} key={campaign.id}>
                                     <Card
-                                        hoverable
                                         bordered={false}
-                                        style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', height: '100%' }}
-                                        cover={<img alt={campaign.title} src={campaign.cover_image_url} style={{ height: 180, objectFit: 'cover' }} />}
-                                        bodyStyle={{ padding: 20 }}
+                                        className="campaign-card"
+                                        style={{ background: 'transparent', height: '100%' }}
+                                        cover={
+                                            <div className="campaign-card-img-container" style={{ height: 220, position: 'relative' }}>
+                                                <img 
+                                                    alt={campaign.title} 
+                                                    src={campaign.cover_image_url} 
+                                                    className="campaign-card-img"
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                                />
+                                                {/* Floating Category Badge */}
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: '16px',
+                                                    left: '16px',
+                                                    background: 'rgba(15, 23, 42, 0.75)',
+                                                    backdropFilter: 'blur(8px)',
+                                                    color: '#ffffff',
+                                                    padding: '6px 14px',
+                                                    borderRadius: '30px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 700,
+                                                    letterSpacing: '0.5px'
+                                                }}>
+                                                    {campaign.category?.name || 'Umum'}
+                                                </div>
+                                                {/* Floating Days Left Badge */}
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    bottom: '16px',
+                                                    right: '16px',
+                                                    background: 'rgba(255, 255, 255, 0.92)',
+                                                    backdropFilter: 'blur(4px)',
+                                                    color: '#0f172a',
+                                                    padding: '6px 12px',
+                                                    borderRadius: '30px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 700
+                                                }}>
+                                                    {daysLeft} Hari Lagi
+                                                </div>
+                                            </div>
+                                        }
+                                        bodyStyle={{ padding: '20px 4px 8px 4px' }}
                                         onClick={() => navigate(`/campaigns/${campaign.slug}`)}
                                     >
-                                        <Tag color="blue" style={{ marginBottom: 12, borderRadius: 4, border: 'none', background: '#f0f7ff', color: '#1677ff', fontWeight: 600 }}>
-                                            {campaign.category?.name || 'Kategori'}
-                                        </Tag>
-                                        <Title level={5} style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.4, height: '2.8rem', overflow: 'hidden' }}>
-                                            {campaign.title}
+                                        <Title 
+                                            level={5} 
+                                            style={{ 
+                                                margin: '0 0 16px', 
+                                                fontSize: '1.15rem', 
+                                                fontWeight: 850, 
+                                                lineHeight: 1.35, 
+                                                height: '3.1rem', 
+                                                overflow: 'hidden',
+                                                letterSpacing: '-0.3px'
+                                            }}
+                                        >
+                                            <span className="campaign-card-title">{campaign.title}</span>
                                         </Title>
                                         
                                         <div style={{ marginBottom: 12 }}>
                                             <Progress 
-                                                percent={Math.round((campaign.collected_amount / campaign.goal_amount) * 100)} 
-                                                strokeColor="#1677ff" 
+                                                percent={percent} 
+                                                strokeColor={{
+                                                    '0%': '#1677ff',
+                                                    '100%': '#0050b3'
+                                                }}
                                                 showInfo={false} 
-                                                strokeWidth={6} 
+                                                strokeWidth={5} 
+                                                style={{ margin: 0 }}
                                             />
                                         </div>
                                         
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <Text strong style={{ color: '#1677ff' }}>Rp {new Intl.NumberFormat('id-ID').format(campaign.collected_amount)}</Text>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                                            <div>
+                                                <Text type="secondary" style={{ fontSize: '0.8rem', display: 'block', marginBottom: 2 }}>Terkumpul</Text>
+                                                <Text strong style={{ fontSize: '1.2rem', color: '#1677ff' }}>
+                                                    Rp {new Intl.NumberFormat('id-ID').format(campaign.collected_amount)}
+                                                </Text>
                                             </div>
-                                            <Text strong>{Math.round((campaign.collected_amount / campaign.goal_amount) * 100)}%</Text>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <Text type="secondary" style={{ fontSize: '0.8rem', display: 'block', marginBottom: 2 }}>Target</Text>
+                                                <Text strong style={{ fontSize: '0.95rem', color: '#475569' }}>
+                                                    Rp {new Intl.NumberFormat('id-ID').format(campaign.goal_amount)}
+                                                </Text>
+                                            </div>
                                         </div>
                                         
-                                        <Divider style={{ margin: '12px 0' }} />
-                                        
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <Text type="secondary" style={{ fontSize: '0.85rem' }}>{campaign.donor_count} Donatur</Text>
-                                            <Text type="secondary" style={{ fontSize: '0.85rem' }}><CalendarOutlined /> {daysLeft} hari lagi</Text>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, borderTop: '1px solid #f1f5f9', paddingTop: 12 }}>
+                                            <Text style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>
+                                                {campaign.donor_count} Donatur bergabung
+                                            </Text>
+                                            <Text strong style={{ fontSize: '0.9rem', color: '#1677ff' }}>{percent}%</Text>
                                         </div>
                                     </Card>
                                 </Col>
@@ -486,7 +628,7 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* How it Works Section */}
-            <section style={{ padding: '100px 5%', background: '#fff' }}>
+            <section id="how-it-works" style={{ padding: '100px 5%', background: '#fff' }}>
                 <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: 80 }}>
                         <Title level={2} style={{ fontSize: '2.2rem', fontWeight: 800 }}>Cara Kerja</Title>
@@ -525,7 +667,7 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* FAQ Section */}
-            <section style={{ padding: '80px 5%', background: '#fcfdfe', marginBottom: '80px' }}>
+            <section style={{ padding: '100px 5%', background: '#f8fafc' }}>
                 <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: 64 }}>
                         <Tag color="blue" style={{ marginBottom: 16, fontWeight: 600 }}>TANYA JAWAB</Tag>
@@ -559,13 +701,22 @@ const LandingPage: React.FC = () => {
                     
                     <div style={{ textAlign: 'center', marginTop: 64, padding: '32px', borderRadius: 24, background: '#f0f7ff' }}>
                         <Text strong style={{ fontSize: '1.1rem', display: 'block', marginBottom: 16 }}>Belum menemukan jawaban?</Text>
-                        <Button 
-                            icon={<WhatsAppOutlined />} 
-                            style={{ background: '#25D366', color: '#fff', border: 'none', height: 48, padding: '0 32px', borderRadius: 12, fontWeight: 700 }}
-                            onClick={() => window.open(`https://wa.me/${getSetting('contact_whatsapp')}`, '_blank')}
-                        >
-                            Hubungi via WhatsApp
-                        </Button>
+                        <Space size="middle" wrap>
+                            <Button 
+                                icon={<WhatsAppOutlined style={{ color: '#25D366' }} />} 
+                                style={{ background: '#ffffff', color: '#25D366', border: '1px solid #25D366', height: 48, padding: '0 32px', borderRadius: 12, fontWeight: 700 }}
+                                onClick={() => window.open(`https://wa.me/${getSetting('contact_whatsapp') || ''}`, '_blank')}
+                            >
+                                WhatsApp Support
+                            </Button>
+                            <Button 
+                                icon={<MailOutlined style={{ color: '#1677ff' }} />} 
+                                style={{ background: '#ffffff', color: '#1677ff', border: '1px solid #1677ff', height: 48, padding: '0 32px', borderRadius: 12, fontWeight: 700 }}
+                                onClick={() => window.open(`mailto:${getSetting('contact_email') || ''}`, '_blank')}
+                            >
+                                Email Support
+                            </Button>
+                        </Space>
                     </div>
                 </div>
             </section>

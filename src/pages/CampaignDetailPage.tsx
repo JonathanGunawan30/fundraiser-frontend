@@ -19,9 +19,9 @@ import {
     Timeline,
     Image,
     Pagination,
-    message,
     Modal,
-    App
+    App,
+    Input
 } from 'antd';
 import { 
     CalendarOutlined, 
@@ -30,9 +30,12 @@ import {
     HeartFilled,
     ShareAltOutlined,
     EditOutlined,
-    InfoCircleFilled,
     PlusOutlined,
-    DeleteOutlined
+    DeleteOutlined,
+    CopyOutlined,
+    WhatsAppOutlined,
+    FacebookOutlined,
+    TwitterOutlined
 } from '@ant-design/icons';
 import api from '../api/axios';
 import type { Campaign, CampaignUpdate, Donation } from '../types';
@@ -48,9 +51,10 @@ const CampaignDetailPage: React.FC = () => {
     const navigate = useNavigate();
     const { user, isLoggedIn } = useAuth();
     const currentUserId = user ? Number(user.id) : null;
-    const { notification } = App.useApp();
+    const { notification, message } = App.useApp();
     const [isDonationModalVisible, setIsDonationModalVisible] = React.useState(false);
     const [isUpdateModalVisible, setIsUpdateModalVisible] = React.useState(false);
+    const [isShareModalVisible, setIsShareModalVisible] = React.useState(false);
     const [editingUpdate, setEditingUpdate] = React.useState<CampaignUpdate | null>(null);
 
     const { data: campaign, isLoading, isError, refetch } = useQuery<Campaign>({
@@ -212,7 +216,6 @@ const CampaignDetailPage: React.FC = () => {
                     ) : donationsResponse?.data && donationsResponse.data.length > 0 ? (
                         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                             {donationsResponse.data.map((donation: Donation) => {
-                                // ponytail: check is_anonymous to display placeholder name/avatar
                                 const name = donation.is_anonymous ? 'Orang Baik' : (donation.user?.name || 'Anonim');
                                 const avatarUrl = donation.is_anonymous ? undefined : donation.user?.avatar_url;
                                 const formattedAmount = new Intl.NumberFormat('id-ID', {
@@ -221,7 +224,6 @@ const CampaignDetailPage: React.FC = () => {
                                     maximumFractionDigits: 0
                                 }).format(donation.amount);
 
-                                // ponytail: simple relative time math
                                 const donationDate = new Date(donation.created_at);
                                 const diffMs = new Date().getTime() - donationDate.getTime();
                                 const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
@@ -283,7 +285,6 @@ const CampaignDetailPage: React.FC = () => {
                                 );
                             })}
 
-                            {/* Pagination Control */}
                             {donationsResponse.meta && donationsResponse.meta.total > donationsResponse.meta.per_page && (
                                 <div style={{ textAlign: 'center', marginTop: 24 }}>
                                     <Pagination
@@ -305,6 +306,10 @@ const CampaignDetailPage: React.FC = () => {
             )
         }
     ];
+
+    const handleShareClick = () => {
+        setIsShareModalVisible(true);
+    };
 
     return (
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
@@ -385,7 +390,7 @@ const CampaignDetailPage: React.FC = () => {
                                 />
                             )}
                             
-                            <Button icon={<ShareAltOutlined />} size="large" block style={{ borderRadius: 12 }}>
+                            <Button icon={<ShareAltOutlined />} size="large" block onClick={handleShareClick} style={{ borderRadius: 12 }}>
                                 Bagikan
                             </Button>
 
@@ -431,6 +436,119 @@ const CampaignDetailPage: React.FC = () => {
                 initialData={editingUpdate}
                 onSuccess={() => refetch()}
             />
+
+            <Modal
+                title="Bagikan Campaign"
+                open={isShareModalVisible}
+                onCancel={() => setIsShareModalVisible(false)}
+                footer={null}
+                centered
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '12px 0' }}>
+                    <Text type="secondary" style={{ textAlign: 'center', marginBottom: 12, display: 'block' }}>
+                        Ayo bantu sebarkan campaign ini agar lebih banyak orang yang tergerak untuk membantu.
+                    </Text>
+
+                    <Button 
+                        type="primary"
+                        icon={<WhatsAppOutlined />}
+                        size="large"
+                        block
+                        style={{ backgroundColor: '#25D366', borderColor: '#25D366', height: 48, borderRadius: 10, fontWeight: 600 }}
+                        onClick={() => {
+                            const text = `Mari bantu campaign: "${campaign.title}" di FundRaiser!`;
+                            const url = window.location.href;
+                            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+                        }}
+                    >
+                        Bagikan ke WhatsApp
+                    </Button>
+
+                    <Button 
+                        type="primary"
+                        icon={<FacebookOutlined />}
+                        size="large"
+                        block
+                        style={{ backgroundColor: '#1877F2', borderColor: '#1877F2', height: 48, borderRadius: 10, fontWeight: 600 }}
+                        onClick={() => {
+                            const url = window.location.href;
+                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                        }}
+                    >
+                        Bagikan ke Facebook
+                    </Button>
+
+                    <Button 
+                        type="primary"
+                        icon={<TwitterOutlined />}
+                        size="large"
+                        block
+                        style={{ backgroundColor: '#000000', borderColor: '#000000', height: 48, borderRadius: 10, fontWeight: 600 }}
+                        onClick={() => {
+                            const text = `Mari bantu campaign: "${campaign.title}" di FundRaiser!`;
+                            const url = window.location.href;
+                            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+                        }}
+                    >
+                        Bagikan ke Twitter / X
+                    </Button>
+
+                    <Divider style={{ margin: '12px 0' }} />
+
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <Input 
+                            value={window.location.href} 
+                            readOnly 
+                            style={{ flex: 1, borderRadius: 10, background: '#f8fafc' }} 
+                        />
+                        <Button 
+                            icon={<CopyOutlined />} 
+                            onClick={() => {
+                                navigator.clipboard.writeText(window.location.href)
+                                    .then(() => {
+                                        notification.success({
+                                            message: 'Tautan Disalin',
+                                            description: 'Tautan campaign telah disalin ke papan klip.',
+                                            placement: 'topRight',
+                                        });
+                                    })
+                                    .catch(() => {
+                                        message.error('Gagal menyalin tautan.');
+                                    });
+                            }}
+                            style={{ borderRadius: 10 }}
+                        >
+                            Salin
+                        </Button>
+                    </div>
+
+                    {navigator.share && (
+                        <>
+                            <Divider style={{ margin: '12px 0' }} />
+                            <Button 
+                                icon={<ShareAltOutlined />}
+                                size="large"
+                                block
+                                style={{ height: 48, borderRadius: 10 }}
+                                onClick={() => {
+                                    const shareData = {
+                                        title: campaign.title,
+                                        text: `Mari bantu campaign: "${campaign.title}" di FundRaiser!`,
+                                        url: window.location.href,
+                                    };
+                                    navigator.share(shareData).catch((err) => {
+                                        if (err.name !== 'AbortError') {
+                                            message.error('Gagal membagikan campaign.');
+                                        }
+                                    });
+                                }}
+                            >
+                                Bagikan Lewat Menu Sistem
+                            </Button>
+                        </>
+                    )}
+                </div>
+            </Modal>
         </div>
     );
 };
