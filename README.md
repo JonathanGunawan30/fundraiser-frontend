@@ -1,73 +1,102 @@
-# React + TypeScript + Vite
+# FundRaiser Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repository houses the frontend client application for FundRaiser, a modern, secure crowdfunding and charity donation platform. The application is built using React, TypeScript, and Vite, leveraging Ant Design for user interfaces.
 
-Currently, two official plugins are available:
+## Core Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Campaign Exploration**: Browse, search, and filter ongoing fundraising campaigns with intuitive UI grids.
+- **Detailed Campaign Profiles**: Comprehensive views including progress trackers, target metrics, lists of contributors, and campaign storytelling timelines.
+- **Structured Share System**: Share campaigns directly to WhatsApp, Facebook, Twitter / X, or quickly copy the shortlink using the premium Share Modal, with native system share fallback support.
+- **Secure Authentication & OTP Verification**: Integrated segmented 6-digit OTP code verification card layouts for authentication.
+- **Donor Interface**: Interactive contribution flow with dynamic validation and payment gateway integration.
+- **Admin Settings and Controls**: Dedicated configuration modules to manage maintenance mode, edit site-wide details, and update profile metrics.
+- **Maintenance Bypass Rules**: Routing guards ensure that while regular routes are inaccessible during scheduled maintenance, admin control panels under /admin remain open.
+- **Static Pages and Legal Modules**: In-app Terms of Service, Privacy Policies, and a Help Center module supporting instant contact via email or WhatsApp support channels.
 
-## React Compiler
+## Technology Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The project utilizes the following core technologies:
 
-## Expanding the ESLint configuration
+- **Framework**: React 19 (TypeScript)
+- **Build Tool**: Vite 8
+- **UI Component Library**: Ant Design 6
+- **Routing**: React Router DOM 7
+- **State Management & Caching**: TanStack Query (React Query) v5
+- **HTTP Client**: Axios 1.16
+- **Form Management**: React Hook Form with Zod schema validation
+- **Charts**: Ant Design Charts 2
+- **Animations & Interactivity**: Lottie-React, CountUp.js
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Project Directory Structure
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+├── api/             # Axios instance config and interceptors
+├── components/      # Reusable UI components (Modals, guards, widgets)
+├── layouts/         # Layout systems (MainLayout, AdminLayout)
+├── lib/             # Context Providers (AuthContext, Theme config)
+├── pages/           # Application views (CampaignDetailPage, LoginPage, profile, etc.)
+│   └── admin/       # Dedicated views for administration panels
+├── types/           # Zod schemas and TypeScript type declarations
+├── App.tsx          # Router configuration and application shell
+├── index.css        # Core stylesheet and layout modifications
+└── main.tsx         # Application entry point
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Prerequisites
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Ensure you have Node.js installed on your machine.
+- Node.js: v18.x or v20.x
+- Package Manager: npm (v9.x or higher)
+
+### Installation
+
+1. Clone the repository and navigate to the project directory:
+   ```bash
+   cd fundraiser-frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Configuration
+
+Create a `.env` file in the root directory and configure the environment variables as follows:
+
+```env
+VITE_API_URL=http://localhost:8000/api
+```
+
+Replace `http://localhost:8000/api` with the URL of your running backend api server.
+
+### Running Development Server
+
+Start the development server with Hot Module Replacement (HMR):
+
+```bash
+npm run dev
+```
+
+The application will be accessible at `http://localhost:5173`.
+
+### Production Build
+
+Generate the production bundle:
+
+```bash
+npm run build
+```
+
+The compiled assets will be built into the `dist/` directory.
+
+### Preview Production Build
+
+Preview the production build locally:
+
+```bash
+npm run preview
 ```
