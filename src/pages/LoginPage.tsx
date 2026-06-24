@@ -25,7 +25,7 @@ const LoginPage: React.FC = () => {
     }, [location, notification, navigate]);
 
     const handleSocialLogin = (provider: string) => {
-        const baseUrl = import.meta.env.VITE_API_URL.replace('/api', '');
+        const baseUrl = import.meta.env.VITE_API_URL.replace(/\/api$/, '');
         window.location.href = `${baseUrl}/auth/user/${provider}/redirect`;
     };
 
